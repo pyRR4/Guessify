@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build directories
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/build/
+
+# Expo
+.expo/
+.expo-shared/
+
+# React Native Debugging
+debug.log
+*.log
+
+# Metro bundler
+*.metro.js
+*.bundle
+
+# Misc
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# JetBrains IDEs (IntelliJ, WebStorm, PhpStorm, etc)
+.idea/
+
+# VS Code
+.vscode/
+
+# Android Studio
+local.properties
+*.iml
+.idea/
+
+# npm log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.bak
+*.swp
+*.swo
