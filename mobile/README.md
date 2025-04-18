@@ -1,6 +1,5 @@
 ## Poradnik uruchomieniowy 
-(dla konfiguracji Windows 11, VS Code oraz Android SDK Manager zamiast Android Studio)
-
+(dla konfiguracji Windows 11 + VS Code + Android SDK Manager)
 ## 1. Node.js
 Pobierz i zainstaluj Node.js LTS: [Pobierz Node.js](https://nodejs.org/en/download)
 
@@ -79,11 +78,3 @@ npm install
     ```bash
     npx react-native run-android
     ```
-
-## 7. (Opcjonalnie) Podgląd logów aplikacji
-
-Aby podglądać logi aplikacji, użyj:
-
-```bash
-adb logcat
-```
