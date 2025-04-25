@@ -8,38 +8,46 @@ import RadioGroup from '../components/forms/RadioGroup';
 const CreateRoom1Screen = ({ navigation }: any) => {
   const [roomId, setRoomId] = useState('');
   const [password, setPassword] = useState('');
-  const [songSource, setSongSource] = useState('Spotify');
-  const [gameGoal, setGameGoal] = useState('Guess the Title');
+  const [timeToAnswer, setTimeToAnswer] = useState('15 sec');
+  const [numberOfRounds, setNumberOfRounds] = useState('20 songs');
+  const [playbackLength, setPlaybackLength] = useState('15 sec');
 
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <ScreenBanner title="GAME MODE" />
+          <ScreenBanner title="GAME SETTINGS" />
         </View>
 
         <View style={styles.section}>
-          <CenteredText>Source of Songs</CenteredText>
+          <CenteredText>Time to Answer</CenteredText>
           <RadioGroup
-            options={['Spotify', 'Host', 'Players']}
-            selected={songSource}
-            onSelect={setSongSource}
+            options={['10 sec', '15 sec', '30 sec']}
+            selected={timeToAnswer}
+            onSelect={setTimeToAnswer}
           />
         </View>
         <View style={styles.section}>
-          <CenteredText>Game Goal</CenteredText>
+          <CenteredText>Number of Rounds</CenteredText>
           <RadioGroup
-            options={['Guess the Title', 'Guess the Author', 'Guess the User']}
-            selected={gameGoal}
-            onSelect={setGameGoal}
+            options={['10 songs', '20 songs', '30 songs']}
+            selected={numberOfRounds}
+            onSelect={setNumberOfRounds}
           />
-
+        </View>
+        <View style={styles.section}>
+          <CenteredText>Playback Length</CenteredText>
+          <RadioGroup
+            options={['10 sec', '15 sec', '30 sec']}
+            selected={playbackLength}
+            onSelect={setPlaybackLength}
+          />
         </View>
 
         <View style={styles.section}>
-          <GreenButton title="Continue" screen="CreateRoom2" />
-          <GreenButton title="Back" screen="LoggedInHome" variant="secondary"/>
+          <GreenButton title="Create room" screen="" />
+          <GreenButton title="Back" screen="CreateRoom1" variant="secondary"/>
         </View>
       </ScrollView>
     </View>
