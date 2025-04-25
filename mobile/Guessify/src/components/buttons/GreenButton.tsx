@@ -17,7 +17,7 @@ const GreenButton: React.FC<GreenButtonProps> = ({ title, screen, variant = 'pri
       style={[styles.button, { backgroundColor: isPrimary ? '#00C853' : '#999' }]}
       onPress={() => navigation.navigate(screen)}
     >
-      <Text style={styles.text}>{title}</Text>
+      <Text style={[styles.text, { color: '#fff' }]}>{title}</Text>
     </TouchableOpacity>
   );
 };
