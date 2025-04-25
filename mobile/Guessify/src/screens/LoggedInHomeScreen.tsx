@@ -22,7 +22,7 @@ const LoggedInHomeScreen = ({ navigation }: any) => {
         <View style={styles.section}>
           <CenteredText>Start guessing:</CenteredText>
           <GreenButton title="Join room" screen="JoinRoom" />
-          <GreenButton title="Create room" screen="" />
+          <GreenButton title="Create room" screen="CreateRoom1" />
         </View>
       </ScrollView>
     </View>
