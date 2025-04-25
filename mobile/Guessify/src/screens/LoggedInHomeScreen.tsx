@@ -1,28 +1,31 @@
-import React from 'react';
-import { ScrollView,View, Image, StyleSheet } from 'react-native';
-import GreenButton from '../components/buttons/GreenButton';
+import React, { useState } from 'react';
+import { ScrollView, View, Image, StyleSheet } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 import CenteredText from '../components/texts/CenteredText';
+import GreenButton from '../components/buttons/GreenButton';
 
-const HomeScreen = ({ navigation }: any) => {
+const LoggedInHomeScreen = ({ navigation }: any) => {
+  const { user, logout } = useAuth();
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Image source={require('../assets/guessify.png')} style={styles.logo} />
-    
+
+        <CenteredText>Logged in as</CenteredText>
+        <CenteredText size={18}>{user?.toUpperCase()}</CenteredText>
+
         <View style={styles.section}>
-          <CenteredText>
-            Welcome to Guessify! To use all features, connect your Spotify account.
-          </CenteredText>
-          <GreenButton title="Log in via Spotify" screen="LoggedInHome" />
+          <GreenButton title="Change account" screen="Home" variant="secondary"/>
         </View>
-    
+
         <View style={styles.section}>
-          <CenteredText>Or just start guessing!</CenteredText>
-          <GreenButton title="Join Room" screen="JoinRoom" />
+          <CenteredText>Start guessing:</CenteredText>
+          <GreenButton title="Join room" screen="JoinRoom" />
+          <GreenButton title="Create room" screen="" />
         </View>
       </ScrollView>
     </View>
-    
   );
 };
 
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
-    gap: 60,
+    gap: 25,
   },
   logo: {
     width: 200,
@@ -50,7 +53,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     width: '100%',
   },
+
 });
 
-
-export default HomeScreen;
+export default LoggedInHomeScreen;
