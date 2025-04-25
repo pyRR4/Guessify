@@ -6,6 +6,7 @@ import JoinRoomScreen from '../screens/JoinRoomScreen';
 import LoggedInHomeScreen from '../screens/LoggedInHomeScreen';
 import CreateRoom1Screen from '../screens/CreateRoom1Screen'
 import CreateRoom2Screen from '../screens/CreateRoom2Screen'
+import CreateRoom3Screen from '../screens/CreateRoom3Screen'
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ const MainNavigator = () => {
       <Stack.Screen name="LoggedInHome" component={LoggedInHomeScreen} />
       <Stack.Screen name="CreateRoom1" component={CreateRoom1Screen} />
       <Stack.Screen name="CreateRoom2" component={CreateRoom2Screen} />
+      <Stack.Screen name="CreateRoom3" component={CreateRoom3Screen} />
     </Stack.Navigator>
   );
 };
