@@ -5,14 +5,16 @@ import { useNavigation } from '@react-navigation/native';
 interface GreenButtonProps {
   title: string;
   screen: string;
+  variant?: 'primary' | 'secondary';
 }
 
-const GreenButton: React.FC<GreenButtonProps> = ({ title, screen }) => {
+const GreenButton: React.FC<GreenButtonProps> = ({ title, screen, variant = 'primary' }) => {
   const navigation = useNavigation<any>();
+  const isPrimary = variant === 'primary';
 
   return (
     <TouchableOpacity
-      style={styles.button}
+      style={[styles.button, { backgroundColor: isPrimary ? '#00C853' : '#999' }]}
       onPress={() => navigation.navigate(screen)}
     >
       <Text style={styles.text}>{title}</Text>
@@ -22,7 +24,6 @@ const GreenButton: React.FC<GreenButtonProps> = ({ title, screen }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#00C853',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 15,
@@ -30,7 +31,6 @@ const styles = StyleSheet.create({
     width: '60%',
   },
   text: {
-    color: '#fff',
     fontSize: 16,
     textAlign: 'center',
     fontWeight: 'bold',

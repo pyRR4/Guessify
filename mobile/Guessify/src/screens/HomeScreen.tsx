@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView,View, Image, StyleSheet } from 'react-native';
-import GreenButton from '../components/GreenButton';
-import CenteredText from '../components/CenteredText';
+import GreenButton from '../components/buttons/GreenButton';
+import CenteredText from '../components/texts/CenteredText';
 
 const HomeScreen = ({ navigation }: any) => {
   return (
@@ -18,7 +18,7 @@ const HomeScreen = ({ navigation }: any) => {
     
         <View style={styles.section}>
           <CenteredText>Or just start guessing!</CenteredText>
-          <GreenButton title="Join Room" screen="" />
+          <GreenButton title="Join Room" screen="JoinRoom" />
         </View>
       </ScrollView>
     </View>
