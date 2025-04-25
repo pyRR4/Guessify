@@ -31,8 +31,7 @@ const Input: React.FC<InputProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '60%',
-    marginBottom: 16,
-
+    marginVertical: 15,
   },
   input: {
     backgroundColor: '#1A1A1A',
@@ -41,6 +40,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#fff',
   },
 });
 

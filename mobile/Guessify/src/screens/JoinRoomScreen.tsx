@@ -33,8 +33,8 @@ const JoinRoomScreen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.section}>
-          <GreenButton title="Join" />
-          <GreenButton title="Scan the QR Code"/>
+          <GreenButton title="Join" screen="" />
+          <GreenButton title="Scan the QR Code" screen="" />
           <GreenButton title="Back" screen="Home" variant="secondary"/>
         </View>
       </ScrollView>
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       flexGrow: 1,
-      gap: 60,
+      gap: 40,
   },
   section: {
       alignItems: 'center',
