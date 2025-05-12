@@ -26,7 +26,7 @@ const CreateRoom3Screen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.section}>
-          <GreenButton title="Launch your Room" screen="" />
+          <GreenButton title="Launch your Room" screen="CreateRoom4" />
           <GreenButton title="Back" screen="CreateRoom2" variant="secondary"/>
         </View>
       </ScrollView>
