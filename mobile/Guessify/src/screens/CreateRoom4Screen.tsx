@@ -25,8 +25,12 @@ const CreateRoom4Screen = () => {
         <ShareField value="541Htfb544U" />
 
         <View style={styles.section}>
-          <GreenButton title="Show the QR Code" screen="" />
-          <GreenButton title="Start the Game" screen=""/>
+          <GreenButton title="Show the QR Code" screen="FinalScore"/>
+          <GreenButton
+            title="Start the Game"
+            screen="RoundNumber"
+            params={{ roundNumber: 1, gameMode: 'title' }}
+          />
           <GreenButton title="Close the room" screen="LoggedInHome" variant="secondary"/>
         </View>
       </ScrollView>

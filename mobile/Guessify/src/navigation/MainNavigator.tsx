@@ -9,6 +9,12 @@ import CreateRoom2Screen from '../screens/CreateRoom2Screen'
 import CreateRoom3Screen from '../screens/CreateRoom3Screen'
 import CreateRoom4Screen from '../screens/CreateRoom4Screen'
 import WaitingRoomScreen from '../screens/WaitingRoomScreen'
+import RoundNumberScreen from '../screens/RoundNumberScreen'
+import GameScreen from '../screens/GameScreen'
+import WaitingGameScreen from '../screens/WaitingGameScreen'
+import AnswerScreen from '../screens/AnswerScreen'
+import CurrentScoreScreen from '../screens/CurrentScoreScreen'
+import FinalScoreScreen from '../screens/FinalScoreScreen'
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +30,11 @@ const MainNavigator = () => {
       <Stack.Screen name="CreateRoom3" component={CreateRoom3Screen} />
       <Stack.Screen name="CreateRoom4" component={CreateRoom4Screen} />
       <Stack.Screen name="WaitingRoom" component={WaitingRoomScreen} />
+      <Stack.Screen name="RoundNumber" component={RoundNumberScreen} />
+      <Stack.Screen name="GameScreen" component={GameScreen} />
+      <Stack.Screen name="WaitingGameScreen" component={WaitingGameScreen} />
+      <Stack.Screen name="Answer" component={AnswerScreen} />
+      <Stack.Screen name="FinalScore" component={FinalScoreScreen} />
     </Stack.Navigator>
   );
 };
