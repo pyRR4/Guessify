@@ -25,7 +25,7 @@ const CreateRoom4Screen = () => {
         <ShareField value="541Htfb544U" />
 
         <View style={styles.section}>
-          <GreenButton title="Show the QR Code" screen=""/>
+          <GreenButton title="Show the QR Code" screen="CurrentScore"/>
           <GreenButton
             title="Start the Game"
             screen="RoundNumber"
