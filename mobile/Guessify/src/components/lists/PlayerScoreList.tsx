@@ -10,9 +10,10 @@ interface Player {
 interface PlayerScoreListProps {
   players: Player[];
   currentPlayer?: string;
+  startFrom?: number;
 }
 
-const PlayerScoreList: React.FC<PlayerScoreListProps> = ({ players, currentPlayer }) => {
+const PlayerScoreList: React.FC<PlayerScoreListProps> = ({ players, currentPlayer, startFrom = 1 }) => {
   return (
     <View style={styles.listContainer}>
       {players.map((player, index) => {
@@ -26,7 +27,7 @@ const PlayerScoreList: React.FC<PlayerScoreListProps> = ({ players, currentPlaye
               isCurrent && styles.highlighted,
             ]}
           >
-            <Text style={styles.position}>#{index + 1}</Text>
+            <Text style={styles.position}>#{index + startFrom}</Text>
 
             <View style={styles.playerNameBox}>
               <Text style={styles.playerName}>{player.name}</Text>

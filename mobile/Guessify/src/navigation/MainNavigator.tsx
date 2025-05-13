@@ -14,6 +14,7 @@ import GameScreen from '../screens/GameScreen'
 import WaitingGameScreen from '../screens/WaitingGameScreen'
 import AnswerScreen from '../screens/AnswerScreen'
 import CurrentScoreScreen from '../screens/CurrentScoreScreen'
+import FinalScoreScreen from '../screens/FinalScoreScreen'
 
 const Stack = createNativeStackNavigator();
 
@@ -33,7 +34,7 @@ const MainNavigator = () => {
       <Stack.Screen name="GameScreen" component={GameScreen} />
       <Stack.Screen name="WaitingGameScreen" component={WaitingGameScreen} />
       <Stack.Screen name="Answer" component={AnswerScreen} />
-      <Stack.Screen name="CurrentScore" component={CurrentScoreScreen} />
+      <Stack.Screen name="FinalScore" component={FinalScoreScreen} />
     </Stack.Navigator>
   );
 };
