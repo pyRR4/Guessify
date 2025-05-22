@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import ScreenBanner from '../components/banners/ScreenBanner';
 import GameQuestion from '../components/forms/GameQuestion';
-import GreenButton from '../components/buttons/GreenButton'
+import GreenButton from '../components/buttons/GreenButton';
 import { useAuth } from '../context/AuthContext';
 import { useRoute, RouteProp } from '@react-navigation/native';
+import { useGame } from '../context/GameContext';
 
 type GameScreenParams = {
   GameScreen: {
     gameMode?: 'title' | 'author' | 'user';
-    roundNumber?: number;
   };
 };
 
@@ -18,7 +18,13 @@ const GameScreen = () => {
   const route = useRoute<RouteProp<GameScreenParams, 'GameScreen'>>();
 
   const gameMode = route.params?.gameMode ?? 'title';
-  const roundNumber = route.params?.roundNumber ?? 1;
+
+  const {
+    score,
+    setScore,
+    round,
+    setRound,
+  } = useGame();
 
   const promptByMode = {
     title: 'Guess the Title',
@@ -26,17 +32,31 @@ const GameScreen = () => {
     user: 'Guess Who Picked It',
   };
 
-  const answers = ['Answer A', 'Answer B', 'Answer C', 'Answer D'];
-  const correctAnswer = 'Answer B';
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [correctAnswer, setCorrectAnswer] = useState<string>('');
+
+  useEffect(() => {
+    const possibleAnswers = ['Answer A', 'Answer B', 'Answer C', 'Answer D'];
+    const correct = possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
+
+    const shuffled = [...possibleAnswers].sort(() => Math.random() - 0.5);
+
+    setAnswers(shuffled);
+    setCorrectAnswer(correct);
+  }, [round]);
 
   const handleAnswer = (isCorrect: boolean, selected: string) => {
     console.log(`User selected "${selected}" — ${isCorrect ? 'Correct!' : 'Wrong!'}`);
+    if (isCorrect) {
+      setScore(score + 1);
+    }
+    setRound(round + 1);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.section}>
-        <ScreenBanner title={`ROUND ${roundNumber}`} />
+        <ScreenBanner title={`ROUND ${round}`} />
       </View>
 
       <View style={styles.section}>
@@ -47,7 +67,8 @@ const GameScreen = () => {
           onAnswer={handleAnswer}
         />
       </View>
-      <GreenButton title="Guess" screen="WaitingGameScreen"/>
+
+      <GreenButton title="Next" screen="GameScreen" />
     </View>
   );
 };

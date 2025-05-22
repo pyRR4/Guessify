@@ -5,6 +5,7 @@ import LoadingScreen from './src/screens/LoadingScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 import { AuthProvider } from './src/context/AuthContext.tsx';
+import { GameProvider } from './src/context/GameContext';
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,9 +24,11 @@ const App = () => {
         {isLoading ? (
           <LoadingScreen />
         ) : (
-          <NavigationContainer>
-            <MainNavigator />
-          </NavigationContainer>
+          <GameProvider>
+            <NavigationContainer>
+              <MainNavigator />
+            </NavigationContainer>
+          </GameProvider>
         )}
       </AuthProvider>
     </SafeAreaProvider>
