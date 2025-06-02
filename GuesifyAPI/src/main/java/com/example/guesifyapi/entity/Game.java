@@ -33,6 +33,7 @@ public class Game {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private GameRoom gameRoom;
 
+    @Enumerated(EnumType.STRING)
     @Column(
             name = "game_status"
     )
@@ -57,9 +58,9 @@ public class Game {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User winner;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
-    private List<Song> songs;
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GameSong> songs;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayerGameScore> scores;
 }

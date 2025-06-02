@@ -5,6 +5,8 @@ import com.example.guesifyapi.entity.enums.SongSource;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
 @Table(
         name = "game_rooms"
@@ -21,31 +23,36 @@ public class GameRoom {
     @Column(nullable = false)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @Column(name = "room_code", nullable = false, unique = true)
+    private String roomCode;
+
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(nullable = false, name = "host_id")
     private User host;
 
-    @Column(nullable = false)
+    @Column(name = "max_players", nullable = false)
     private Integer maxPlayers;
 
-    @Column(nullable = false)
-    private Integer players;
-
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "song_source", nullable = false)
     private SongSource songSource;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "game_mode", nullable = false)
     private GameMode gameMode;
 
-    @Column(nullable = false)
-    private Integer answerTime;
+    @Column(name = "answer_time_seconds", nullable = false)
+    private Double answerTimeSeconds;
 
-    @Column(nullable = false)
+    @Column(name = "rounds_number", nullable = false)
     private Integer roundsNumber;
 
-    @Column(nullable = false)
-    private Integer playbackLength;
+    @Column(name = "playback_length_seconds", nullable = false)
+    private Double playbackLength;
 
-    @Column
-    private String roomPassword;
+    @Column(name = "room_password_hash")
+    private String roomPasswordHash;
+
+    @OneToMany(mappedBy = "gameroom", cascade = CascadeType.MERGE)
+    private Set<RoomPlayer> players;
 }
