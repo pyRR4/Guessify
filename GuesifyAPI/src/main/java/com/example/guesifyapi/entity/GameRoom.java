@@ -21,8 +21,9 @@ public class GameRoom {
     @Column(nullable = false)
     private Long id;
 
-    @JoinColumn(nullable = false)
-    private Long hostId;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(nullable = false, name = "host_id")
+    private User host;
 
     @Column(nullable = false)
     private Integer maxPlayers;

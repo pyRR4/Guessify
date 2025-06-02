@@ -28,15 +28,13 @@ public class Game {
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(
             name = "game_room_id",
-            foreignKey = @ForeignKey(name = "fk_game_game_room"),
-            nullable = false
+            foreignKey = @ForeignKey(name = "fk_game_game_room")
     )
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private GameRoom gameRoom;
 
     @Column(
-            name = "game_status",
-            nullable = false
+            name = "game_status"
     )
     private GameStatus gameStatus;
 
@@ -59,9 +57,9 @@ public class Game {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User winner;
 
-    @OneToMany(mappedBy = "spotifySongId", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     private List<Song> songs;
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     private List<PlayerGameScore> scores;
 }
