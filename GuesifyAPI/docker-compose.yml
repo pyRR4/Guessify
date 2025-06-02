@@ -27,7 +27,9 @@ services:
       - spring-net
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ${SPRING_CONTAINER}
     ports:
       - "${SPRING_PORT}:8080"
