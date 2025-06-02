@@ -15,8 +15,11 @@ import lombok.*;
 public class Song {
 
     @Id
-    @Column(nullable = false)
-    private Long spotifySongID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "spotify_track_id", nullable = false, unique = true)
+    private String spotifyTrackID;
 
     @Column(nullable = false)
     private String title;
@@ -24,9 +27,9 @@ public class Song {
     @Column(nullable = false)
     private String artist;
 
-    @Column
+    @Column(name = "album_cover_url")
     private String albumCoverUrl;
 
-    @Column(nullable = false)
+    @Column(name = "song_url", nullable = false)
     private String songUrl;
 }

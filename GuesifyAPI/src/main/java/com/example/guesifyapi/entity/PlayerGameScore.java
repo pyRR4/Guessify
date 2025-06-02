@@ -6,7 +6,8 @@ import java.util.List;
 
 @Entity
 @Table(
-        name = "user_game_scores"
+        name = "player_game_scores",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"game_id", "player_id"})
 )
 public class PlayerGameScore {
 
@@ -15,17 +16,17 @@ public class PlayerGameScore {
     @Column(nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "game_id", nullable = false)
     private Game game;
 
-    @ManyToOne
-    @JoinColumn
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "player_id", nullable = false)
     private User player;
 
-    @Column
-    private Integer totalScore;
+    @Column(name = "total_score")
+    private Integer totalScore = 0;
 
-    @OneToMany(mappedBy = "")
+    @OneToMany(mappedBy = "playerGameScore")
     private List<PlayerRoundAnswer> roundAnswers;
 }

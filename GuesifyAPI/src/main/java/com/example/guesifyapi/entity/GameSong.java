@@ -7,7 +7,11 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(
-        name = "game_songs"
+        name = "game_songs",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"game_id", "round_number"}),
+                @UniqueConstraint(columnNames = {"game_id", "song_id"})
+        }
 )
 @Getter
 @Setter

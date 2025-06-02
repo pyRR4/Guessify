@@ -16,26 +16,26 @@ public class PlayerRoundAnswer {
     @Column(nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "player_game_score")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "player_game_score_id", nullable = false)
     private PlayerGameScore playerGameScore;
 
-    @ManyToOne
-    @JoinColumn(name = "game_song")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "game_song_id", nullable = false)
     private GameSong gameSong;
 
-    @Column()
+    @Column(name = "submitted_answer", nullable = false)
     private String submittedAnswer;
 
-    @Column
+    @Column(nullable = false)
     private boolean correct;
 
-    @Column
+    @Column(name = "points_awarded", nullable = false)
     private Integer pointsAwarded;
 
-    @Column
+    @Column(name = "time_taken_ms", nullable = false)
     private Long timeTakenMs;
 
-    @Column
+    @Column(name = "answered_at", nullable = false)
     private LocalDateTime answeredAt;
 }

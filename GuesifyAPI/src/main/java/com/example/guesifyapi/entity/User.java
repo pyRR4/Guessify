@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(
@@ -30,9 +31,12 @@ public class User {
     @Column(nullable = false, name = "spotify_account_id")
     private String spotifyAccountID;
 
-    @Column
+    @Column(name = "avatar_url")
     private String avatarUrl;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "user")
+    private List<RoomPlayer> rooms;
 }
