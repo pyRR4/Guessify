@@ -5,12 +5,13 @@ import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import RadioGroup from '../components/forms/RadioGroup';
 
-const CreateRoom1Screen = ({ navigation }: any) => {
-  const [roomId, setRoomId] = useState('');
-  const [password, setPassword] = useState('');
+const CreateRoom2Screen = ({ navigation, route }: any) => {
   const [timeToAnswer, setTimeToAnswer] = useState('15 sec');
   const [numberOfRounds, setNumberOfRounds] = useState('20 songs');
   const [playbackLength, setPlaybackLength] = useState('15 sec');
+  const { songSource, gameMode } = route.params;
+  const parseSeconds = (value: string) => parseInt(value.split(' ')[0]);
+  const parseSongs = (value: string) => parseInt(value.split(' ')[0]);
 
 
   return (
@@ -46,7 +47,16 @@ const CreateRoom1Screen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.section}>
-          <GreenButton title="Create room" screen="CreateRoom3" />
+          <GreenButton
+            title="Create room"
+            onPress={() => navigation.navigate('CreateRoom3', {
+              songSource,
+              gameMode,
+              answerTimeSeconds: parseSeconds(timeToAnswer),
+              roundsNumber: parseSongs(numberOfRounds),
+              playbackLength: parseSeconds(playbackLength),
+            })}
+          />
           <GreenButton title="Back" screen="CreateRoom1" variant="secondary"/>
         </View>
       </ScrollView>
@@ -74,4 +84,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CreateRoom1Screen;
+export default CreateRoom2Screen;

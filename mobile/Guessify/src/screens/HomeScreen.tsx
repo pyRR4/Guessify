@@ -15,7 +15,7 @@ const HomeScreen = ({ navigation }: any) => {
           </CenteredText>
           <GreenButton title="Log in via Spotify" screen="LoggedInHome" />
         </View>
-    
+
         <View style={styles.section}>
           <CenteredText>Or just start guessing!</CenteredText>
           <GreenButton title="Join Room" screen="JoinRoom" />
