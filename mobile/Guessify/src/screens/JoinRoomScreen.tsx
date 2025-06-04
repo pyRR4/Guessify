@@ -34,7 +34,6 @@ const JoinRoomScreen = ({ navigation }: any) => {
 
         <View style={styles.section}>
           <GreenButton title="Join" screen="WaitingRoom" />
-          <GreenButton title="Scan the QR Code" screen="" />
           <GreenButton title="Back" screen="Home" variant="secondary"/>
         </View>
       </ScrollView>
