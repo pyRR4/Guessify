@@ -6,11 +6,20 @@ import CenteredText from '../components/texts/CenteredText';
 import RadioGroup from '../components/forms/RadioGroup';
 
 const CreateRoom1Screen = ({ navigation }: any) => {
-  const [roomId, setRoomId] = useState('');
-  const [password, setPassword] = useState('');
   const [songSource, setSongSource] = useState('Spotify');
   const [gameGoal, setGameGoal] = useState('Guess the Title');
 
+  const mapSongSource = (text: string) => {
+    if (text === 'Spotify') return 'SPOTIFY';
+    if (text === 'Host') return 'HOST';
+    return 'PLAYERS';
+  };
+
+  const mapGameGoal = (text: string) => {
+    if (text === 'Guess the Title') return 'TITLE';
+    if (text === 'Guess the Author') return 'AUTHOR';
+    return 'USER';
+  };
 
   return (
     <View style={styles.container}>
@@ -38,7 +47,13 @@ const CreateRoom1Screen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.section}>
-          <GreenButton title="Continue" screen="CreateRoom2" />
+          <GreenButton
+            title="Continue"
+            onPress={() => navigation.navigate('CreateRoom2', {
+              songSource: mapSongSource(songSource),
+              gameMode: mapGameGoal(gameGoal),
+            })}
+          />
           <GreenButton title="Back" screen="LoggedInHome" variant="secondary"/>
         </View>
       </ScrollView>

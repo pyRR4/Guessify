@@ -6,18 +6,21 @@ interface GreenButtonProps {
   title: string;
   screen: string;
   params?: object;
+  onPress?: () => void;
   variant?: 'primary' | 'secondary';
 }
 
-const GreenButton: React.FC<GreenButtonProps> = ({ title, screen, params, variant = 'primary' }) => {
+const GreenButton: React.FC<GreenButtonProps> = ({ title, screen, params, onPress, variant = 'primary' }) => {
   const navigation = useNavigation<any>();
   const isPrimary = variant === 'primary';
 
   const handlePress = () => {
-    if (params) {
+    if (onPress) {
+      onPress();
+    } else if (screen){
       navigation.navigate(screen, params);
     } else {
-      navigation.navigate(screen);
+      console.warn('GreenButton: No screen or onPress provided');
     }
   };
 

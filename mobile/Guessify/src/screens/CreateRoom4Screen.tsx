@@ -7,10 +7,10 @@ import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input'
 import ShareField from '../components/forms/ShareField';
 
+const CreateRoom4Screen = ({ route, navigation }: any) => {
 
-const players = ['PLAYER 1', 'PLAYER 2', 'PLAYER 3', 'PLAYER 4'];
+  const { roomId, password, players = [] } = route.params;
 
-const CreateRoom4Screen = () => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -21,15 +21,14 @@ const CreateRoom4Screen = () => {
         </CenteredText>
         <PlayerList players={players} />
         <CenteredText> Sharing the Room </CenteredText>
-        <ShareField value="https://guessify/fdb555665" />
-        <ShareField value="541Htfb544U" />
+        <ShareField value={roomId} />
+        <ShareField value={password} />
 
         <View style={styles.section}>
-          <GreenButton title="Show the QR Code" screen="FinalScore"/>
           <GreenButton
             title="Start the Game"
             screen="RoundNumber"
-            params={{ roundNumber: 1, gameMode: 'title' }}
+            params={{ roundNumber: 1, gameMode: 'TITLE' }}
           />
           <GreenButton title="Close the room" screen="LoggedInHome" variant="secondary"/>
         </View>
