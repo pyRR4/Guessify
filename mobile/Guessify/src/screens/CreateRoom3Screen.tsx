@@ -5,12 +5,16 @@ import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input';
 import { createRoom } from '../api/createRoom';
+import { useAuth } from '../context/AuthContext';
 
 const CreateRoom3Screen = ({ navigation, route }: any) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const { user } = useAuth();
+  const hostName = user?.username || 'PLAYER';
+
   const {
-      hostName = 'PLAYER 1',
       maxPlayers = 10,
       songSource,
       gameMode,

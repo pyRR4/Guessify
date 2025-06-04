@@ -6,10 +6,31 @@ import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input'
 import ShareField from '../components/forms/ShareField';
-
-const players = ['PLAYER 1', 'PLAYER 2', 'PLAYER 3', 'PLAYER 4'];
+import { getPlayersInRoom } from '../api/room';
 
 const WaitingRoomScreen = () => {
+  const route = useRoute<any>();
+    const { roomId } = route.params;
+
+    const [players, setPlayers] = useState<string[]>([]);
+
+    useEffect(() => {
+      const fetchPlayers = async () => {
+        try {
+          const response = await getPlayersInRoom(roomId);
+          setPlayers(response);
+        } catch (e) {
+          console.error('Failed to fetch players:', e);
+        }
+      };
+
+      fetchPlayers();
+
+      // Opcjonalnie: odświeżaj listę co kilka sekund
+      const interval = setInterval(fetchPlayers, 5000);
+      return () => clearInterval(interval);
+    }, [roomId]);
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
