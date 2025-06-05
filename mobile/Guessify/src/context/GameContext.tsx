@@ -1,50 +1,114 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 
-export type Song = {
-  title: string;
-  artist: string;
-  uri: string;
+// Define types
+type Question = {
+  id: number;
+  song: string;
+  correct: string;
+  options: string[];
+  audioUrl: any;
 };
 
-type GameContextType = {
-  currentSong: Song | null;
-  setCurrentSong: (song: Song) => void;
-  playDuration: number;
-  setPlayDuration: (duration: number) => void;
+type Player = {
+  id: string;
+  name: string;
   score: number;
-  setScore: (score: number) => void;
-  round: number;
-  setRound: (round: number) => void;
+};
+
+type GameState = 'round' | 'results' | 'leaderboard';
+
+type GameContextType = {
+  gameState: GameState;
+  setGameState: Dispatch<SetStateAction<GameState>>;
+  currentRound: number;
+  players: Player[];
+  question: Question | null;
+  selectedAnswer: string | null;
+  submitAnswer: (answer: string) => void;
+  finishRound: () => void;
+  startNextRound: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-type GameProviderProps = {
-  children: ReactNode;
-};
 
-export const GameProvider = ({ children }: GameProviderProps) => {
-  const [currentSong, setCurrentSong] = useState<Song | null>({
-    title: 'Sample Song',
-    artist: 'Sample Artist',
-    uri: 'sample.mp3',
-  });
+const mockQuestions: Question[] = [
+  {
+    id: 1,
+    song: 'Imagine',
+    correct: 'John Lennon',
+    options: ['John Lennon', 'Elton John', 'Paul McCartney', 'George Harrison'],
+    audioUrl: require('../assets/sample1.mp3'),
+  },
+  {
+    id: 2,
+    song: 'Billie Jean',
+    correct: 'Michael Jackson',
+    options: ['Prince', 'Michael Jackson', 'Stevie Wonder', 'Lionel Richie'],
+    audioUrl: require('../assets/sample2.mp3'),
+  },
+];
 
-  const [playDuration, setPlayDuration] = useState<number>(10000);
-  const [score, setScore] = useState<number>(0);
-  const [round, setRound] = useState<number>(1);
+const mockPlayers: Player[] = [
+  { id: '1', name: 'Alice', score: 0 },
+  { id: '2', name: 'Bob', score: 0 },
+  { id: '3', name: 'You', score: 0 },
+];
+
+export const GameProvider = ({ children }: { children: ReactNode }) => {
+  const [gameState, setGameState] = useState<GameState>('round');
+  const [currentRound, setCurrentRound] = useState(0);
+  const [question, setQuestion] = useState<Question | null>(mockQuestions[0]);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [players, setPlayers] = useState<Player[]>(mockPlayers);
+
+  const submitAnswer = (answer: string) => {
+    setSelectedAnswer(answer);
+    // Mock scoring
+    if (question && answer === question.correct) {
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.name === 'You' ? { ...p, score: p.score + 100 } : p
+        )
+      );
+    }
+  };
+
+  const finishRound = () => {
+    setGameState('results');
+  };
+
+  const startNextRound = () => {
+    const next = currentRound + 1;
+    if (next < mockQuestions.length) {
+      setCurrentRound(next);
+      setQuestion(mockQuestions[next]);
+      setSelectedAnswer(null);
+      setGameState('round');
+    } else {
+      setGameState('leaderboard');
+    }
+  };
 
   return (
     <GameContext.Provider
       value={{
-        currentSong,
-        setCurrentSong,
-        playDuration,
-        setPlayDuration,
-        score,
-        setScore,
-        round,
-        setRound,
+        gameState,
+        setGameState,
+        currentRound,
+        players,
+        question,
+        selectedAnswer,
+        submitAnswer,
+        finishRound,
+        startNextRound,
       }}
     >
       {children}
@@ -52,6 +116,7 @@ export const GameProvider = ({ children }: GameProviderProps) => {
   );
 };
 
+// Hook for using the context
 export const useGame = (): GameContextType => {
   const context = useContext(GameContext);
   if (!context) {

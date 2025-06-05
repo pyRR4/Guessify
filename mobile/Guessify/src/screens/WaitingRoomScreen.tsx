@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import ScreenBanner from '../components/banners/ScreenBanner';
 import PlayerList from '../components/lists/PlayerList';
 import GreenButton from '../components/buttons/GreenButton';
