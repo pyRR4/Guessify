@@ -1,56 +1,63 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ScreenBanner from '../components/banners/ScreenBanner';
-import GameQuestion from '../components/forms/GameQuestion';
-import GreenButton from '../components/buttons/GreenButton'
-import { useAuth } from '../context/AuthContext';
-import { useRoute, RouteProp } from '@react-navigation/native';
-
-type GameScreenParams = {
-  GameScreen: {
-    gameMode?: 'title' | 'author' | 'user';
-    roundNumber?: number;
-  };
-};
+import GreenButton from '../components/buttons/GreenButton';
+import { useGame } from '../context/GameContext';
+import { useNavigation } from '@react-navigation/native';
 
 const GameScreen = () => {
-  const { user } = useAuth();
-  const route = useRoute<RouteProp<GameScreenParams, 'GameScreen'>>();
+  const { question, selectedAnswer, submitAnswer, finishRound, currentRound, gameState } = useGame();
+  const navigation = useNavigation();
 
-  const gameMode = route.params?.gameMode ?? 'title';
-  const roundNumber = route.params?.roundNumber ?? 1;
+  useEffect(() => {
+    if (gameState === 'results') {
+      navigation.navigate('Answer');
+    }
+  }, [gameState]);
 
-  const promptByMode = {
-    title: 'Guess the Title',
-    author: 'Guess the Author',
-    user: 'Guess Who Picked It',
-  };
+  if (!question) return null;
 
-  const answers = ['Answer A', 'Answer B', 'Answer C', 'Answer D'];
-  const correctAnswer = 'Answer B';
-
-  const handleAnswer = (isCorrect: boolean, selected: string) => {
-    console.log(`User selected "${selected}" — ${isCorrect ? 'Correct!' : 'Wrong!'}`);
+  const handleOptionSelect = (option: string) => {
+    if (!selectedAnswer) {
+      submitAnswer(option);
+      setTimeout(finishRound, 3000);
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.section}>
-        <ScreenBanner title={`ROUND ${roundNumber}`} />
+        <ScreenBanner title={`ROUND ${currentRound}`} />
       </View>
 
       <View style={styles.section}>
-        <GameQuestion
-          questionText={promptByMode[gameMode]}
-          answers={answers}
-          correctAnswer={correctAnswer}
-          onAnswer={handleAnswer}
-        />
+        <Text style={styles.questionText}>What song is this?</Text>
+        <Text style={styles.song}>🎵 {question.song} 🎵</Text>
+
+        {question.options.map((option) => (
+          <TouchableOpacity
+            key={option}
+            style={[
+              styles.option,
+              selectedAnswer === option && styles.selectedOption,
+            ]}
+            onPress={() => handleOptionSelect(option)}
+            disabled={!!selectedAnswer}
+          >
+            <Text style={styles.optionText}>{option}</Text>
+          </TouchableOpacity>
+        ))}
+
+        {selectedAnswer && (
+          <Text style={styles.waiting}>Waiting for others...</Text>
+        )}
       </View>
-      <GreenButton title="Guess" screen="WaitingGameScreen"/>
+
     </View>
   );
 };
+
+export default GameScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -66,6 +73,35 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     width: '100%',
   },
+  questionText: {
+    fontSize: 24,
+    color: 'white',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  song: {
+    fontSize: 20,
+    color: '#ccc',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  option: {
+    backgroundColor: '#1E1E1E',
+    padding: 15,
+    marginVertical: 8,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  selectedOption: {
+    backgroundColor: '#4CAF50',
+  },
+  optionText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  waiting: {
+    marginTop: 20,
+    color: '#aaa',
+  },
 });
-
-export default GameScreen;

@@ -58,6 +58,46 @@ paths:
                 items:
                   $ref: "#/components/schemas/Player"
 
+  /api/games/{gameId}/submit:
+    post:
+      summary: Submit final score for a player
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitScoreRequest"
+      responses:
+        "200":
+          description: Score submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmitScoreResponse"
+
+  /api/games/{gameId}/results:
+    get:
+      summary: Get current results or final leaderboard
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Game results status or leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameResultsResponse"
+
 components:
   schemas:
     CreateRoomRequest:
@@ -117,3 +157,46 @@ components:
           type: string
         avatarUrl:
           type: string
+
+    SubmitScoreRequest:
+      type: object
+      required:
+        - playerId
+        - score
+      properties:
+        playerId:
+          type: string
+        score:
+          type: integer
+
+    SubmitScoreResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    GameResultsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [waiting, complete]
+        playersRemaining:
+          type: integer
+          nullable: true
+        leaderboard:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        score:
+          type: integer
