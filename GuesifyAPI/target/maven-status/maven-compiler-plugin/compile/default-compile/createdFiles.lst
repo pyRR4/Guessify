@@ -1,0 +1,12 @@
+com\example\guesifyapi\entity\PlayerGameScore.class
+com\example\guesifyapi\entity\enums\SongSource.class
+com\example\guesifyapi\entity\RoomPlayer.class
+com\example\guesifyapi\entity\enums\GameMode.class
+com\example\guesifyapi\entity\GameSong.class
+com\example\guesifyapi\entity\User.class
+com\example\guesifyapi\entity\GameRoom.class
+com\example\guesifyapi\entity\Song.class
+com\example\guesifyapi\entity\enums\GameStatus.class
+com\example\guesifyapi\GuesifyApiApplication.class
+com\example\guesifyapi\entity\Game.class
+com\example\guesifyapi\entity\PlayerRoundAnswer.class
