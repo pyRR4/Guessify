@@ -13,7 +13,7 @@ const LoggedInHomeScreen = ({ navigation }: any) => {
         <Image source={require('../assets/guessify.png')} style={styles.logo} />
 
         <CenteredText>Logged in as</CenteredText>
-        <CenteredText size={18}>{user?.toUpperCase()}</CenteredText>
+        <CenteredText size={18}>{user.username.toUpperCase()}</CenteredText>
 
         <View style={styles.section}>
           <GreenButton title="Change account" screen="Home" variant="secondary"/>

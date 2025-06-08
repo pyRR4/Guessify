@@ -15,6 +15,7 @@ import WaitingGameScreen from '../screens/WaitingGameScreen'
 import AnswerScreen from '../screens/AnswerScreen'
 import CurrentScoreScreen from '../screens/CurrentScoreScreen'
 import FinalScoreScreen from '../screens/FinalScoreScreen'
+import AuthCallbackScreen from '../screens/AuthCallbackScreen'
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +24,7 @@ const MainNavigator = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
       <Stack.Screen name="Loading" component={LoadingScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="AuthCallback" component={AuthCallbackScreen} />
       <Stack.Screen name="JoinRoom" component={JoinRoomScreen} />
       <Stack.Screen name="LoggedInHome" component={LoggedInHomeScreen} />
       <Stack.Screen name="CreateRoom1" component={CreateRoom1Screen} />
