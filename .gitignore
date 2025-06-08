@@ -1,2 +1,4 @@
 GuesifyAPI/.env
 GuesifyAPI/target/
+GuesifyAPI/.mvn/
+GuesifyAPI/.idea/
