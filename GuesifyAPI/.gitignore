@@ -1,0 +1,7 @@
+.env
+target/
+.mvn/
+.idea/
+mvnw
+mvnw.cmd
+GuesifyAPI.iml
