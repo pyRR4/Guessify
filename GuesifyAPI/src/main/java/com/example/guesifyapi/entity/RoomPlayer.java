@@ -1,6 +1,10 @@
 package com.example.guesifyapi.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -8,6 +12,10 @@ import java.time.LocalDateTime;
 @Table(
         name = "room_players"
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoomPlayer {
 
     @Id
