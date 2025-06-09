@@ -34,6 +34,7 @@ public class AuthController {
     public ResponseEntity<?> callback(@RequestParam String code, HttpSession session) {
         User user = spotifyAuthService.handleCallback(code);
         session.setAttribute("userId", user.getId());
+        log.info("User authenticated. Access token: {}", user.getAccessToken());
         return ResponseEntity.ok(user);
     }
 
