@@ -19,6 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -73,6 +76,7 @@ class RoomControllerTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setUsername("TestUser");
+        testUser.setAvatarUrl(null);
 
         testRoom = new GameRoom();
         testRoom.setId(100L);
@@ -135,4 +139,94 @@ class RoomControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("User not logged in"));
     }
+
+    @Test
+    void joinRoom_shouldReturnNotFoundIfRoomDoesNotExist() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", 1L);
+
+        Mockito.when(gameRoomRepository.findByRoomCode("INVALID")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/rooms/INVALID/join")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Room not found"));
+    }
+
+    @Test
+    void joinRoom_shouldReturnAlreadyJoined() throws Exception {
+        // Dodaj użytkownika do pokoju przed wywołaniem kontrolera
+        RoomPlayer existingPlayer = new RoomPlayer();
+        existingPlayer.setUser(testUser);
+        existingPlayer.setGameroom(testRoom);
+        testRoom.getPlayers().add(existingPlayer);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", 1L);
+
+        mockMvc.perform(post("/api/rooms/" + testRoomCode + "/join")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User already in the room"));
+    }
+
+    @Test
+    void setRoomPassword_shouldUpdateHash() throws Exception {
+        String requestJson = """
+    {
+      "passwordHash": "superSecretHash123"
+    }
+    """;
+
+        mockMvc.perform(patch("/api/rooms/" + testRoomCode + "/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Room password updated successfully"));
+    }
+
+    @Test
+    void setRoomPassword_shouldReturnNotFoundIfRoomMissing() throws Exception {
+        Mockito.when(gameRoomRepository.findByRoomCode("INVALID")).thenReturn(Optional.empty());
+
+        String requestJson = """
+    {
+      "passwordHash": "irrelevant"
+    }
+    """;
+
+        mockMvc.perform(patch("/api/rooms/INVALID/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Room not found"));
+    }
+
+    @Test
+    void getPlayersInRoom_shouldReturnPlayersList() throws Exception {
+        RoomPlayer rp = new RoomPlayer();
+        rp.setUser(testUser);
+        rp.setGameroom(testRoom);
+
+        testRoom.getPlayers().add(rp);
+        Mockito.when(gameRoomRepository.findById(100L)).thenReturn(Optional.of(testRoom));
+
+        mockMvc.perform(get("/api/rooms/100/players"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].username").value("TestUser"))
+                .andExpect(jsonPath("$[0].avatarUrl").doesNotExist());
+    }
+
+    @Test
+    void getPlayersInRoom_shouldReturnNotFound() throws Exception {
+        Mockito.when(gameRoomRepository.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/rooms/999/players"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Room not found"));
+    }
+
 }
