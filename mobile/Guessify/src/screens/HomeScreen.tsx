@@ -13,16 +13,15 @@ const HomeScreen = ({ navigation }: any) => {
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'GET',
-        redirect: 'follow',
+        redirect: 'manual',
       });
 
-      const redirectUrl = response.headers.get('Location') || response.url;
-      if (redirectUrl) {
-        Linking.openURL(redirectUrl);
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-    }
+      const url = response.url;
+          Linking.openURL(url);
+
+        } catch (err) {
+          console.error('Login error:', err);
+        }
   };
 
   return (
