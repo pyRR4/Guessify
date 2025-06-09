@@ -14,6 +14,14 @@ public class SpotifyController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    /**
+     * Pobiera listę utworów z podanej playlisty Spotify.
+     *
+     * @param id ID playlisty Spotify
+     * @param access_token Access token użytkownika uzyskany z autoryzacji Spotify (OAuth)
+     * @return Lista uproszczonych informacji o utworach (tytuł, wykonawca, link (niestety null))
+     *
+     */
     @GetMapping("/playlist")
     public ResponseEntity<?> getPlaylistTracks(@RequestParam String id, @RequestParam String access_token) {
         HttpHeaders headers = new HttpHeaders();
@@ -42,4 +50,35 @@ public class SpotifyController {
 
         return ResponseEntity.ok(simplifiedTracks);
     }
+
+    /**
+     * Pobiera listę playlist aktualnie zalogowanego użytkownika Spotify.
+     *
+     * @param access_token Access token użytkownika uzyskany z autoryzacji Spotify (OAuth)
+     * @return Lista uproszczonych informacji o playlistach (id, nazwa)
+     *
+     */
+    @GetMapping("/playlists")
+    public ResponseEntity<?> getUserPlaylists(@RequestParam String access_token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + access_token);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        String url = "https://api.spotify.com/v1/me/playlists";
+
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
+
+        List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("items");
+
+        List<Map<String, String>> simplifiedPlaylists = new ArrayList<>();
+        for (Map<String, Object> item : items) {
+            Map<String, String> simplified = new HashMap<>();
+            simplified.put("id", (String) item.get("id"));
+            simplified.put("name", (String) item.get("name"));
+            simplifiedPlaylists.add(simplified);
+        }
+
+        return ResponseEntity.ok(simplifiedPlaylists);
+    }
+
 }
