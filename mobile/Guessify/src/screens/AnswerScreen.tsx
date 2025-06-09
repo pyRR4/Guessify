@@ -5,19 +5,18 @@ import ScreenBanner from '../components/banners/ScreenBanner';
 import { useGame } from '../context/GameContext';
 import { useNavigation } from '@react-navigation/native';
 
-
 const AnswerScreen = () => {
   const {
     question,
     selectedAnswer,
-    players,
     startNextRound,
     currentRound,
     gameState,
+    score,
+    gameOptions,
   } = useGame();
 
   const navigation = useNavigation();
-
 
   const isCorrect = selectedAnswer === question?.correct;
 
@@ -39,12 +38,27 @@ const AnswerScreen = () => {
 
   if (!question) return null;
 
+  const getCorrectLabel = () => {
+    switch (gameOptions.gameGoal) {
+      case 'Guess the Title':
+        return 'Correct Title';
+      case 'Guess the Author':
+        return 'Correct Author';
+      case 'Guess the User':
+        return 'Correct User';
+      default:
+        return 'Correct Answer';
+    }
+  };
+
+  if (!question || gameState !== 'results') return null;
+
   return (
     <View style={styles.container}>
       <ScreenBanner title={`Round ${currentRound + 1} Answer`} />
 
       <View style={styles.imageWrapper}>
-        {/*TODO: OKLADKA ALBUMU*/}
+        {/*TODO: ALBUM COVER*/}
         <Image
           source={require('../assets/guessify.png')}
           style={styles.image}
@@ -58,7 +72,7 @@ const AnswerScreen = () => {
       </View>
 
       <View style={styles.answerBlock}>
-        <Text style={styles.label}>Correct Artist</Text>
+        <Text style={styles.label}>{getCorrectLabel()}</Text>
         <Text style={styles.value}>{question.correct}</Text>
       </View>
 
@@ -82,10 +96,11 @@ const AnswerScreen = () => {
         </View>
       </View>
 
+      <View style={styles.scoreBlock}>
+        <Text style={styles.label}>Current Score</Text>
+        <Text style={styles.value}>{score} pts</Text>
+      </View>
 
-      <TouchableOpacity style={styles.nextButton} onPress={startNextRound}>
-        <Text style={styles.nextButtonText}>Next Round</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -129,6 +144,15 @@ const styles = StyleSheet.create({
   playerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  scoreBlock: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: '#00C853',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginTop: 10,
   },
   nextButton: {
     marginTop: 30,

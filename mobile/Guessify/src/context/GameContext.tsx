@@ -5,79 +5,67 @@ import React, {
   ReactNode,
   Dispatch,
   SetStateAction,
+  useEffect,
 } from 'react';
+import { generateMockPlaylist } from '../services/mockPlaylist';
 
-// Define types
 type Question = {
   id: number;
   song: string;
   correct: string;
   options: string[];
-  audioUrl: any;
+  audioUrl: string;
 };
 
-type Player = {
-  id: string;
-  name: string;
-  score: number;
-};
+type GameState = 'lobby' | 'round' | 'results' | 'leaderboard';
 
-type GameState = 'round' | 'results' | 'leaderboard';
+type GameOptions = {
+  sourceOfSongs: 'Spotify' | 'Host' | 'Players';
+  gameGoal: 'Guess the Title' | 'Guess the Author' | 'Guess the User';
+  timeToAnswer: number;
+  numberOfRounds: number;
+  playbackLength: number;
+};
 
 type GameContextType = {
   gameState: GameState;
   setGameState: Dispatch<SetStateAction<GameState>>;
   currentRound: number;
-  players: Player[];
+  playlist: Question[];
   question: Question | null;
   selectedAnswer: string | null;
+  score: number;
+  gameOptions: GameOptions;
   submitAnswer: (answer: string) => void;
   finishRound: () => void;
   startNextRound: () => void;
+  setPlaylist: (questions: Question[]) => void;
+  setGameOptions: (options: GameOptions) => void;
+  startGame: () => void;
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-
-const mockQuestions: Question[] = [
-  {
-    id: 1,
-    song: 'Imagine',
-    correct: 'John Lennon',
-    options: ['John Lennon', 'Elton John', 'Paul McCartney', 'George Harrison'],
-    audioUrl: require('../assets/sample1.mp3'),
-  },
-  {
-    id: 2,
-    song: 'Billie Jean',
-    correct: 'Michael Jackson',
-    options: ['Prince', 'Michael Jackson', 'Stevie Wonder', 'Lionel Richie'],
-    audioUrl: require('../assets/sample2.mp3'),
-  },
-];
-
-const mockPlayers: Player[] = [
-  { id: '1', name: 'Alice', score: 0 },
-  { id: '2', name: 'Bob', score: 0 },
-  { id: '3', name: 'You', score: 0 },
-];
-
 export const GameProvider = ({ children }: { children: ReactNode }) => {
-  const [gameState, setGameState] = useState<GameState>('round');
+  const [gameState, setGameState] = useState<GameState>('lobby');
   const [currentRound, setCurrentRound] = useState(0);
-  const [question, setQuestion] = useState<Question | null>(mockQuestions[0]);
+  const [playlist, setPlaylist] = useState<Question[]>([]);
+  const [question, setQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [players, setPlayers] = useState<Player[]>(mockPlayers);
+  const [score, setScore] = useState<number>(0);
+  const [roundStarted, setRoundStarted] = useState(false);
+  const [gameOptions, setGameOptions] = useState<GameOptions>({
+    sourceOfSongs: 'Spotify',
+    gameGoal: 'Guess the Title',
+    timeToAnswer: 15,
+    numberOfRounds: 5,
+    playbackLength: 15,
+  });
 
   const submitAnswer = (answer: string) => {
     setSelectedAnswer(answer);
-    // Mock scoring
     if (question && answer === question.correct) {
-      setPlayers((prev) =>
-        prev.map((p) =>
-          p.name === 'You' ? { ...p, score: p.score + 100 } : p
-        )
-      );
+      setScore((prev) => prev + 100);
     }
   };
 
@@ -87,15 +75,67 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const startNextRound = () => {
     const next = currentRound + 1;
-    if (next < mockQuestions.length) {
+    if (next < Math.min(playlist.length, gameOptions.numberOfRounds)) {
       setCurrentRound(next);
-      setQuestion(mockQuestions[next]);
+      setQuestion(playlist[next]);
       setSelectedAnswer(null);
       setGameState('round');
+      setRoundStarted(false);
     } else {
       setGameState('leaderboard');
     }
   };
+
+  const setPlaylistAndStart = (questions: Question[]) => {
+    setPlaylist(questions);
+    setCurrentRound(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setQuestion(questions[0] || null);
+    setGameState('round');
+    setRoundStarted(false);
+  };
+
+  const startGame = () => {
+    const mockPlaylist = generateMockPlaylist(gameOptions);
+    setPlaylistAndStart(mockPlaylist);
+  };
+
+  useEffect(() => {
+    if (gameState === 'round' && question && !roundStarted) {
+      const delay = setTimeout(() => {
+        setRoundStarted(true);
+      }, 200); 
+      return () => clearTimeout(delay);
+    }
+  }, [gameState, question, roundStarted]);
+
+  useEffect(() => {
+    if (gameState === 'round' && roundStarted) {
+      const timer = setTimeout(() => {
+        finishRound();
+      }, gameOptions.timeToAnswer * 1000);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [gameState, roundStarted, gameOptions.timeToAnswer]);
+
+  // Loggign for console debugging in devTOols
+  useEffect(() => {
+    console.log(
+      'Round started:',
+      roundStarted,
+      'GameState:',
+      gameState,
+      'Question:',
+      question?.song
+    );
+  }, [roundStarted, gameState, question]);
+
+
+  useEffect(() => {
+    setGameState('lobby');
+  }, [gameOptions]);
 
   return (
     <GameContext.Provider
@@ -103,12 +143,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         gameState,
         setGameState,
         currentRound,
-        players,
+        playlist,
         question,
         selectedAnswer,
+        score,
+        gameOptions,
         submitAnswer,
         finishRound,
         startNextRound,
+        setPlaylist: setPlaylistAndStart,
+        setGameOptions,
+        startGame,
       }}
     >
       {children}
@@ -116,7 +161,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook for using the context
 export const useGame = (): GameContextType => {
   const context = useContext(GameContext);
   if (!context) {

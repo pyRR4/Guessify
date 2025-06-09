@@ -1,12 +1,19 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ScreenBanner from '../components/banners/ScreenBanner';
-import GreenButton from '../components/buttons/GreenButton';
 import { useGame } from '../context/GameContext';
 import { useNavigation } from '@react-navigation/native';
 
 const GameScreen = () => {
-  const { question, selectedAnswer, submitAnswer, finishRound, currentRound, gameState } = useGame();
+  const { 
+    question, 
+    selectedAnswer, 
+    submitAnswer, 
+    currentRound, 
+    gameState, 
+    gameOptions 
+  } = useGame();
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -20,18 +27,31 @@ const GameScreen = () => {
   const handleOptionSelect = (option: string) => {
     if (!selectedAnswer) {
       submitAnswer(option);
-      setTimeout(finishRound, 3000);
+    }
+  };
+
+  const getQuestionPrompt = () => {
+    switch (gameOptions.gameGoal) {
+      case 'Guess the Title':
+        return 'What is the title of this song?';
+      case 'Guess the Author':
+        return 'Who is the author of this song?';
+      case 'Guess the User':
+        return 'Who added this song?';
+      default:
+        return 'What song is this?';
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.section}>
-        <ScreenBanner title={`ROUND ${currentRound}`} />
+        <ScreenBanner title={`ROUND ${currentRound + 1}`} />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.questionText}>What song is this?</Text>
+        <Text style={styles.questionText}>{getQuestionPrompt()}</Text>
+
         <Text style={styles.song}>🎵 {question.song} 🎵</Text>
 
         {question.options.map((option) => (
@@ -49,10 +69,9 @@ const GameScreen = () => {
         ))}
 
         {selectedAnswer && (
-          <Text style={styles.waiting}>Waiting for others...</Text>
+          <Text style={styles.waiting}>Waiting for next round...</Text>
         )}
       </View>
-
     </View>
   );
 };

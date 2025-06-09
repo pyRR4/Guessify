@@ -6,10 +6,24 @@ import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input'
 import ShareField from '../components/forms/ShareField';
+import { useGame } from '../context/GameContext';
 
 const CreateRoom4Screen = ({ route, navigation }: any) => {
 
   const { roomId, password, players = [] } = route.params;
+
+  const { startGame, gameOptions } = useGame();
+
+  const onStartGamePress = () => {
+    startGame(); 
+
+
+    navigation.navigate('RoundNumber', {
+      roundNumber: 1,
+      totalRounds: gameOptions.numberOfRounds,
+      gameMode: gameOptions.gameGoal.toLowerCase(), //TODO: NOT GONNA BE USED, DATA DOWNLOADED FROM API
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -27,8 +41,7 @@ const CreateRoom4Screen = ({ route, navigation }: any) => {
         <View style={styles.section}>
           <GreenButton
             title="Start the Game"
-            screen="RoundNumber"
-            params={{ roundNumber: 1, gameMode: 'TITLE' }}
+            onPress={onStartGamePress} 
           />
           <GreenButton title="Close the room" screen="LoggedInHome" variant="secondary"/>
         </View>
