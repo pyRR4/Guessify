@@ -58,9 +58,6 @@ public class SpotifyAuthServiceImpl implements SpotifyAuthService {
 
         URI uri = builder.build().toUri();
 
-        log.info(uri.toString());
-        log.info("Spotify redirect_uri: {}", config.getRedirectUri());
-
         return uri;
     }
 
