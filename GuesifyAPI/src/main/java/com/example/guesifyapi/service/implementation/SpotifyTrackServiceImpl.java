@@ -3,7 +3,6 @@ package com.example.guesifyapi.service.implementation;
 import com.example.guesifyapi.dto.Artist;
 import com.example.guesifyapi.dto.SongDto;
 import com.example.guesifyapi.dto.SpotifyPlaylistTracksResponse;
-import com.example.guesifyapi.service.contract.SongService;
 import com.example.guesifyapi.service.contract.SpotifyAuthService;
 import com.example.guesifyapi.service.contract.SpotifyTrackService;
 import org.springframework.http.HttpEntity;

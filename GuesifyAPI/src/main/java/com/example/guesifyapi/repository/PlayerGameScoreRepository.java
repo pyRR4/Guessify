@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PlayerGameScoreRepository extends JpaRepository<PlayerGameScore, Long> {
-    List<PlayerGameScore> findByGameRoomCode(String roomCode);
+    List<PlayerGameScore> findByGame_GameRoom_RoomCodeOrderByTotalScoreDesc(String roomCode);
     
     /**
      * Zlicza, ile wyników zostało zapisanych dla danej instancji gry.
