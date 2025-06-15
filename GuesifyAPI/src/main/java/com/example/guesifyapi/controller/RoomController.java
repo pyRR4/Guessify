@@ -61,7 +61,6 @@ public class RoomController {
     }
 
     private final UserRepository userRepository;
-    private final RoomPlayerRepository roomPlayerRepository;
 
     /**
      * Pozwala użytkownikowi (z sesji) dołączyć do istniejącego pokoju gry.
