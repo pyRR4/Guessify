@@ -5,6 +5,11 @@ import Input from '../components/forms/Input';
 import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import { useAuth } from '../context/AuthContext';
+import { joinRoom } from '../api/joinRoom';
+import { connectToSocket, sendToSocket } from '../services/socketService';
+
+
+
 
 const JoinRoomScreen = ({ navigation }: any) => {
   const [roomId, setRoomId] = useState('');
@@ -14,19 +19,29 @@ const JoinRoomScreen = ({ navigation }: any) => {
 
   const { user } = useAuth();
 
-  const handleJoinRoom = () => {
+  const handleJoinRoom = async () => {
     if (roomId.trim() === '' || password.trim() === '') {
       setError('Both fields are required');
       return;
     }
-
+  
+    if (!user?.id) {
+      setError('You must be logged in to join a room.');
+      return;
+    }
+  
     setError('');
-
-    // TODO: dodaj tu wywołanie backendu (fetch/axios), np. joinRoom({ roomId, password, user })
-    navigation.navigate('WaitingRoom', {
-      roomId,
-      username: user?.username,
-    });
+  
+    try {
+      await joinRoom(roomId);
+      navigation.navigate('WaitingRoom', {
+        roomId,
+        username: user?.username,
+      });
+    } catch (e: any) {
+      console.error('Join room failed', e);
+      setError(e.message || 'Could not join room');
+    }
   };
 
   return (

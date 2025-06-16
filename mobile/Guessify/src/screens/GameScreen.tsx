@@ -32,11 +32,11 @@ const GameScreen = () => {
 
   const getQuestionPrompt = () => {
     switch (gameOptions.gameGoal) {
-      case 'Guess the Title':
+      case 'GUESS_THE_TITLE':
         return 'What is the title of this song?';
-      case 'Guess the Author':
-        return 'Who is the author of this song?';
-      case 'Guess the User':
+      case 'GUESS_THE_ARTIST':
+        return 'Who is the artist of this song?';
+      case 'GUESS_THE_USER':
         return 'Who added this song?';
       default:
         return 'What song is this?';

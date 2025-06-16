@@ -16,9 +16,9 @@ const CreateRoom1Screen = ({ navigation }: any) => {
   };
 
   const mapGameGoal = (text: string) => {
-    if (text === 'Guess the Title') return 'TITLE';
-    if (text === 'Guess the Author') return 'AUTHOR';
-    return 'USER';
+    if (text === 'Guess the Title') return 'GUESS_THE_TITLE';
+    if (text === 'Guess the Author') return 'GUESS_THE_ARTIST';
+    if (text === 'Guess the User') return 'GUESS_THE_USER';
   };
 
   return (

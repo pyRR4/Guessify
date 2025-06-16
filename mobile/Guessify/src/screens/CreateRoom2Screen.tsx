@@ -52,9 +52,9 @@ const CreateRoom2Screen = ({ navigation, route }: any) => {
             onPress={() => navigation.navigate('CreateRoom3', {
               songSource,
               gameMode,
-              answerTimeSeconds: parseSeconds(timeToAnswer),
+              answerTimeSeconds: parseSeconds(timeToAnswer) * 1.0,
               roundsNumber: parseSongs(numberOfRounds),
-              playbackLength: parseSeconds(playbackLength),
+              playbackLength: parseSeconds(playbackLength) * 1.0,
             })}
           />
           <GreenButton title="Back" screen="CreateRoom1" variant="secondary"/>

@@ -4,6 +4,7 @@ interface User {
   id: number;
   username: string;
   avatarUrl?: string;
+  accessToken: string;
 }
 
 interface AuthContextType {

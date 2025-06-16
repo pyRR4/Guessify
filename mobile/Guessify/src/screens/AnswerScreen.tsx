@@ -40,11 +40,11 @@ const AnswerScreen = () => {
 
   const getCorrectLabel = () => {
     switch (gameOptions.gameGoal) {
-      case 'Guess the Title':
+      case 'GUESS_THE_TITLE':
         return 'Correct Title';
-      case 'Guess the Author':
-        return 'Correct Author';
-      case 'Guess the User':
+      case 'GUESS_THE_ARTIST':
+        return 'Correct Artist';
+      case 'GUESS_THE_USER':
         return 'Correct User';
       default:
         return 'Correct Answer';

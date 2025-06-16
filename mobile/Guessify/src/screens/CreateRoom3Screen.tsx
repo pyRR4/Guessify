@@ -6,12 +6,14 @@ import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input';
 import { createRoom } from '../api/createRoom';
 import { useAuth } from '../context/AuthContext';
+import { useGame } from '../context/GameContext';
 
 const CreateRoom3Screen = ({ navigation, route }: any) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const { user } = useAuth();
+  const { setGameOptions } = useGame();
   const hostName = user?.username || 'PLAYER';
 
   const {
@@ -28,11 +30,11 @@ const CreateRoom3Screen = ({ navigation, route }: any) => {
         setError('Password cannot be empty');
         return;
       }
-
+    
       setError('');
-
-      const payload = {
-        hostName,
+    
+      const payload: CreateRoomPayload = {
+        hostId: user?.id!,
         maxPlayers,
         songSource,
         gameMode,
@@ -41,16 +43,28 @@ const CreateRoom3Screen = ({ navigation, route }: any) => {
         playbackLength,
         roomPasswordHash: password,
       };
-
+    
       try {
+        console.log(JSON.stringify(payload, null, 2));
         const response = await createRoom(payload);
+
+        setGameOptions({
+          sourceOfSongs: songSource,
+          gameGoal: gameMode,
+          timeToAnswer: answerTimeSeconds,
+          numberOfRounds: roundsNumber,
+          playbackLength: playbackLength,
+        });
+    
         navigation.navigate('CreateRoom4', {
-          roomId: response.roomId,
+          roomId: response.id,
+          roomCode: response.roomCode,
           password,
-          players: [hostName], // na razie lokalnie tylko host
+          players: [user?.username],
         });
       } catch (e) {
         console.error('Room creation failed', e);
+        setError('Could not create room.');
       }
     };
 

@@ -1,12 +1,19 @@
 import { CreateRoomPayload, CreateRoomResponse } from '../types';
+import { API_URL } from '@env';
 
-export const createRoom = async (data: CreateRoomPayload): Promise<CreateRoomResponse> => {
-  // TODO: Replace this with actual API call
-  console.log('Sending to backend:', data);
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ roomId: 'abc123', roomCode: 'ROOM42' });
-    }, 1000);
+export const createRoom = async (
+  data: CreateRoomPayload
+): Promise<CreateRoomResponse> => {
+  const res = await fetch(`${API_URL}/api/rooms`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   });
+
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(`Room creation failed: ${error}`);
+  }
+
+  return res.json();
 };

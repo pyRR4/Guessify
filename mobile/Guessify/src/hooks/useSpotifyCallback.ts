@@ -22,6 +22,7 @@ const useSpotifyCallback = () => {
           id: user.id,
           username: user.username,
           avatarUrl: user.avatarUrl,
+          accessToken: user.accessToken,
         });
   
         navigation.navigate('LoggedInHome');

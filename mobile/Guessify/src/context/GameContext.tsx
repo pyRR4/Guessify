@@ -8,6 +8,8 @@ import React, {
   useEffect,
 } from 'react';
 import { generateMockPlaylist } from '../services/mockPlaylist';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '@env';
 
 type Question = {
   id: number;
@@ -18,10 +20,12 @@ type Question = {
 };
 
 type GameState = 'lobby' | 'round' | 'results' | 'leaderboard';
+export type SongSource = 'SPOTIFY' | 'HOST' | 'PLAYERS';
+export type GameGoal = 'GUESS_THE_TITLE' | 'GUESS_THE_ARTIST' | 'GUESS_THE_USER';
 
-type GameOptions = {
-  sourceOfSongs: 'Spotify' | 'Host' | 'Players';
-  gameGoal: 'Guess the Title' | 'Guess the Author' | 'Guess the User';
+export type GameOptions = {
+  sourceOfSongs: SongSource;
+  gameGoal: GameGoal;
   timeToAnswer: number;
   numberOfRounds: number;
   playbackLength: number;
@@ -55,8 +59,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [score, setScore] = useState<number>(0);
   const [roundStarted, setRoundStarted] = useState(false);
   const [gameOptions, setGameOptions] = useState<GameOptions>({
-    sourceOfSongs: 'Spotify',
-    gameGoal: 'Guess the Title',
+    sourceOfSongs: 'SPOTIFY',
+    gameGoal: 'GUESS_THE_TITLE',
     timeToAnswer: 15,
     numberOfRounds: 5,
     playbackLength: 15,
@@ -96,9 +100,79 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setRoundStarted(false);
   };
 
-  const startGame = () => {
-    const mockPlaylist = generateMockPlaylist(gameOptions);
-    setPlaylistAndStart(mockPlaylist);
+  const { user } = useAuth();
+
+  const startGame = async () => {
+    try {
+      const { sourceOfSongs, numberOfRounds } = gameOptions;
+  
+      let fetchedSongs = [];
+
+      console.log(sourceOfSongs);
+  
+      if (sourceOfSongs === 'SPOTIFY') {
+        const playlistId = '3WBxrkvFSTLRSADvwmLhGf'; // tymczasowo hardkodowane
+        const res = await fetch(`${API_URL}/api/spotify/tracks/random-tracks?playlistId=${playlistId}&count=${numberOfRounds}`);
+        fetchedSongs = await res.json();
+      }
+  
+      if (sourceOfSongs === 'HOST') {
+        const accessToken = user?.accessToken;
+        const resPlaylists = await fetch(`${API_URL}/api/spotify/playlists?access_token=${accessToken}`);
+        const playlists = await resPlaylists.json();
+        console.log('Host playlists:', playlists);
+        const allSongs: any[] = [];
+  
+        for (const p of playlists) {
+          const res = await fetch(`${API_URL}/api/spotify/playlist?id=${p.id}&access_token=${accessToken}`);
+          const songs = await res.json();
+          allSongs.push(...songs);
+        }
+  
+        fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
+      }
+  
+      if (sourceOfSongs === 'PLAYERS') {
+        // Analogicznie do hosta, tylko dla wszystkich graczy (tu zakładamy, że masz dostęp do tokenów innych graczy)
+        // Można to zrobić po stronie backendu – przekazując `roomId`, a backend zna wszystkich graczy i ich tokeny
+        // Na razie uproszczone:
+        const accessToken = user?.accessToken;
+        const res = await fetch(`${API_URL}/api/spotify/playlists?access_token=${accessToken}`);
+        const playlists = await res.json();
+        const allSongs: any[] = [];
+  
+        for (const p of playlists) {
+          const res = await fetch(`${API_URL}/api/spotify/playlist?id=${p.id}&access_token=${accessToken}`);
+          const songs = await res.json();
+          allSongs.push(...songs);
+        }
+  
+        fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
+      }
+  
+      // Przekształcenie w typ Question
+      const questions = fetchedSongs.map((track: any, index: number) => ({
+        id: index + 1,
+        song: track.title,
+        correct: gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist : gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user : track.title,
+        options: shuffle([
+          track.title,
+          'Wrong 1',
+          'Wrong 2',
+          'Wrong 3',
+        ]),
+        audioUrl: track.preview_url,
+      }));
+      
+
+      setPlaylistAndStart(questions);
+    } catch (e) {
+      console.error('Game start error:', e);
+    }
+  };
+
+  const shuffle = (array: any[]) => {
+    return array.sort(() => Math.random() - 0.5);
   };
 
   useEffect(() => {

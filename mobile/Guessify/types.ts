@@ -1,15 +1,27 @@
 export type CreateRoomPayload = {
-  hostName: string;
+  hostId: number;
   maxPlayers: number;
-  songSource: 'SPOTIFY' | 'HOST' | 'PLAYERS';
-  gameMode: 'TITLE' | 'AUTHOR' | 'USER';
+  songSource: string;
+  gameMode: string;
   answerTimeSeconds: number;
   roundsNumber: number;
   playbackLength: number;
-  roomPasswordHash?: string;
+  roomPasswordHash: string;
 };
 
 export type CreateRoomResponse = {
-  roomId: string;
+  id: number;
   roomCode: string;
+  host: {
+    id: number;
+    username: string;
+    avatarUrl?: string;
+  };
+  maxPlayers: number;
+  songSource: string;
+  gameMode: string;
+  answerTimeSeconds: number;
+  roundsNumber: number;
+  playbackLength: number;
+  roomPasswordHash: string;
 };

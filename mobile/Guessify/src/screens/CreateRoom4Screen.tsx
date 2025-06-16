@@ -10,7 +10,7 @@ import { useGame } from '../context/GameContext';
 
 const CreateRoom4Screen = ({ route, navigation }: any) => {
 
-  const { roomId, password, players = [] } = route.params;
+  const { roomId, roomCode, password, players = [] } = route.params;
 
   const { startGame, gameOptions } = useGame();
 
@@ -35,7 +35,7 @@ const CreateRoom4Screen = ({ route, navigation }: any) => {
         </CenteredText>
         <PlayerList players={players} />
         <CenteredText> Sharing the Room </CenteredText>
-        <ShareField value={roomId} />
+        <ShareField value={roomCode} />
         <ShareField value={password} />
 
         <View style={styles.section}>
