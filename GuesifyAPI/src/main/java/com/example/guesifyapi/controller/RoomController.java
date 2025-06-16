@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +61,6 @@ public class RoomController {
     }
 
     private final UserRepository userRepository;
-    private final RoomPlayerRepository roomPlayerRepository;
 
     /**
      * Pozwala użytkownikowi (z sesji) dołączyć do istniejącego pokoju gry.
