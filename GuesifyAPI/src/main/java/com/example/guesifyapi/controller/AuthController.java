@@ -30,13 +30,27 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.FOUND).location(uri).build();
     }
 
-    @GetMapping("/callback")
+    /*@GetMapping("/callback")
     public ResponseEntity<?> callback(@RequestParam String code, HttpSession session) {
         User user = spotifyAuthService.handleCallback(code);
         session.setAttribute("userId", user.getId());
         log.info("User authenticated. Access token: {}", user.getAccessToken());
         return ResponseEntity.ok(user);
+    }*/
+    @GetMapping("/callback")
+    public ResponseEntity<?> callback(@RequestParam String code) {
+        // you can handle tokens here or defer to frontend
+        String mobileRedirect = "guessify://callback?code=" + code;
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(mobileRedirect))
+                .build();
     }
+    @GetMapping("/exchange")
+    public ResponseEntity<?> exchange(@RequestParam String code) {
+        User user = spotifyAuthService.handleCallback(code);
+        return ResponseEntity.ok(user);
+    }
+
 
     @GetMapping("/me")
     public ResponseEntity<User> me(HttpSession session) {

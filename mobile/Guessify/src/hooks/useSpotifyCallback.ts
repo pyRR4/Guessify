@@ -1,24 +1,43 @@
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { API_URL } from '@env';
+import { useAuth } from '../context/AuthContext';
 
 const useSpotifyCallback = () => {
   const navigation = useNavigation();
+  const { login } = useAuth();
 
   useEffect(() => {
-    const handleUrl = (event: { url: string }) => {
-      if (event.url.startsWith('guessify://callback')) {
-        navigation.navigate('PostLogin');
+    const handleUrl = async (event: { url: string }) => {
+      const url = event.url;
+      const code = url.split('code=')[1];
+      if (!code) return;
+  
+      try {
+        const res = await fetch(`${API_URL}/api/auth/exchange?code=${code}`);
+        const user = await res.json();
+  
+        login({
+          id: user.id,
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+        });
+  
+        navigation.navigate('LoggedInHome');
+      } catch (err) {
+        console.error('Login failed:', err);
       }
     };
-
+  
     const sub = Linking.addEventListener('url', handleUrl);
+  
     Linking.getInitialURL().then(url => {
       if (url?.startsWith('guessify://callback')) {
-        navigation.navigate('PostLogin');
+        handleUrl({ url });
       }
     });
-
+  
     return () => sub.remove();
   }, []);
 };

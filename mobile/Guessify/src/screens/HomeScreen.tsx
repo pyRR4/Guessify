@@ -1,4 +1,4 @@
-/*import React from 'react';
+import React from 'react';
 import { ScrollView,View, Image, StyleSheet } from 'react-native';
 import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
@@ -11,6 +11,7 @@ const HomeScreen = ({ navigation }: any) => {
 
   const handleLogin = async () => {
     try {
+      console.log('API_URL:', API_URL);
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'GET',
         redirect: 'manual',
@@ -73,8 +74,8 @@ const styles = StyleSheet.create({
 
 
 export default HomeScreen;
-*/
 
+/*
 import React from 'react';
 import { ScrollView,View, Image, StyleSheet } from 'react-native';
 import GreenButton from '../components/buttons/GreenButton';
@@ -131,3 +132,5 @@ const styles = StyleSheet.create({
 
 
 export default HomeScreen;
+
+*/

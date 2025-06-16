@@ -1,4 +1,4 @@
-/*import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View, Image, StyleSheet } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import CenteredText from '../components/texts/CenteredText';
@@ -13,7 +13,7 @@ const LoggedInHomeScreen = ({ navigation }: any) => {
         <Image source={require('../assets/guessify.png')} style={styles.logo} />
 
         <CenteredText>Logged in as</CenteredText>
-        <CenteredText size={18}>{user.username.toUpperCase()}</CenteredText>
+        <CenteredText size={18}> {user?.username?.toUpperCase()} </CenteredText>
 
         <View style={styles.section}>
           <GreenButton title="Change account" screen="Home" variant="secondary"/>
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
 });
 
 export default LoggedInHomeScreen;
-*/
-import React, { useState } from 'react';
+
+/*import React, { useState } from 'react';
 import { ScrollView, View, Image, StyleSheet } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import CenteredText from '../components/texts/CenteredText';
@@ -117,3 +117,4 @@ const styles = StyleSheet.create({
 });
 
 export default LoggedInHomeScreen;
+*/

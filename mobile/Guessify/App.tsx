@@ -7,6 +7,15 @@ import { StatusBar } from 'react-native';
 import { AuthProvider } from './src/context/AuthContext.tsx';
 import { GameProvider } from './src/context/GameContext';
 
+const linking = {
+  prefixes: ['guessify://'],
+  config: {
+    screens: {
+      LoggedInHome: 'callback', // or the name of the screen you navigate to
+    },
+  },
+};
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -25,7 +34,7 @@ const App = () => {
           <LoadingScreen />
         ) : (
           <GameProvider>
-            <NavigationContainer>
+            <NavigationContainer linking={linking}>
               <MainNavigator />
             </NavigationContainer>
           </GameProvider>
