@@ -12,6 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Builder
 public class Song {
 
     @Id
@@ -26,10 +27,4 @@ public class Song {
 
     @Column(nullable = false)
     private String artist;
-
-    @Column(name = "album_cover_url")
-    private String albumCoverUrl;
-
-    @Column(name = "song_url", nullable = false)
-    private String songUrl;
 }

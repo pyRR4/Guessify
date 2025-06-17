@@ -1,13 +1,11 @@
-package com.example.guesifyapi;
+package com.example.guesifyapi.controller;
 
-import com.example.guesifyapi.controller.RoomController;
 import com.example.guesifyapi.entity.GameRoom;
 import com.example.guesifyapi.entity.RoomPlayer;
 import com.example.guesifyapi.entity.User;
 import com.example.guesifyapi.repository.GameRoomRepository;
 import com.example.guesifyapi.repository.RoomPlayerRepository;
 import com.example.guesifyapi.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,7 +21,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 
