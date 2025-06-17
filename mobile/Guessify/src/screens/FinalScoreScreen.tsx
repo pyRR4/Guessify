@@ -1,22 +1,33 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import PlayerScoreList from '../components/lists/PlayerScoreList';
 import ScreenBanner from '../components/banners/ScreenBanner';
 import PodiumBanner from '../components/banners/PodiumBanner';
 import GreenButton from '../components/buttons/GreenButton';
+import { useGame } from '../context/GameContext';
+import { fetchLeaderboard } from '../api/game';
 
-const players = [
-  { name: 'PLAYER 1', score: 3422 },
-  { name: 'PLAYER 6', score: 2674 },
-  { name: 'PLAYER 2', score: 1897 },
-  { name: 'PLAYER 5', score: 1422 },
-  { name: 'PLAYER 7', score: 988 },
-  { name: 'PLAYER 3', score: 630 },
-  { name: 'PLAYER 4', score: 320 },
-  { name: 'PLAYER 8', score: 0 },
-];
+const FinalScoreScreen = ({ navigation }: any) => {
+  const { roomCode } = useGame();
+  const [players, setPlayers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const FinalScoreScreen = () => {
+  useEffect(() => {
+    if (!roomCode) return;
+    fetchLeaderboard(roomCode)
+      .then(setPlayers)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [roomCode]);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0f0" />
+        <Text style={styles.text}>Loading final scores...</Text>
+      </View>
+    );
+  }
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   const [first, second, third, ...rest] = sortedPlayers;
@@ -29,7 +40,8 @@ const FinalScoreScreen = () => {
         <PodiumBanner first={first} second={second} third={third} />
         <PlayerScoreList players={rest} startFrom={4} />
       </ScrollView>
-      <GreenButton title="Return" screen="" />
+      
+      <GreenButton title="Return" onPress={() => navigation.navigate('Home')} />
     </View>
   );
 };
@@ -42,7 +54,17 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     gap: 20,
   },
-
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+  },
 });
 
 export default FinalScoreScreen;

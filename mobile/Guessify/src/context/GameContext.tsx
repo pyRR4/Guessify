@@ -10,6 +10,7 @@ import React, {
 import { generateMockPlaylist } from '../services/mockPlaylist';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '@env';
+import { sendToSocket } from '../services/socketService';
 
 type Question = {
   id: number;
@@ -40,11 +41,14 @@ type GameContextType = {
   selectedAnswer: string | null;
   score: number;
   gameOptions: GameOptions;
+  roomCode: string;
+  isLoading: boolean;
   submitAnswer: (answer: string) => void;
   finishRound: () => void;
   startNextRound: () => void;
   setPlaylist: (questions: Question[]) => void;
   setGameOptions: (options: GameOptions) => void;
+  setRoomCode: (code: string) => void;
   startGame: () => void;
 };
 
@@ -65,6 +69,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     numberOfRounds: 5,
     playbackLength: 15,
   });
+  const [roomCode, setRoomCode] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const submitAnswer = (answer: string) => {
     setSelectedAnswer(answer);
@@ -87,6 +93,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setRoundStarted(false);
     } else {
       setGameState('leaderboard');
+      if (user?.id) {
+        sendToSocket(`/app/game/submit-score/${roomCode}`, {
+          userId: user.id,
+          score: score,
+        });
+      }
     }
   };
 
@@ -104,6 +116,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const startGame = async () => {
     try {
+      setIsLoading(true);
       const { sourceOfSongs, numberOfRounds } = gameOptions;
   
       let fetchedSongs = [];
@@ -133,24 +146,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
   
       if (sourceOfSongs === 'PLAYERS') {
-        // Analogicznie do hosta, tylko dla wszystkich graczy (tu zakładamy, że masz dostęp do tokenów innych graczy)
-        // Można to zrobić po stronie backendu – przekazując `roomId`, a backend zna wszystkich graczy i ich tokeny
-        // Na razie uproszczone:
-        const accessToken = user?.accessToken;
-        const res = await fetch(`${API_URL}/api/spotify/playlists?access_token=${accessToken}`);
-        const playlists = await res.json();
-        const allSongs: any[] = [];
-  
-        for (const p of playlists) {
-          const res = await fetch(`${API_URL}/api/spotify/playlist?id=${p.id}&access_token=${accessToken}`);
-          const songs = await res.json();
-          allSongs.push(...songs);
-        }
-  
+        const res = await fetch(`${API_URL}/api/spotify/players-songs?roomCode=${roomCode}`);
+        const allSongs = await res.json();
         fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
       }
   
-      // Przekształcenie w typ Question
+      
       const questions = fetchedSongs.map((track: any, index: number) => ({
         id: index + 1,
         song: track.title,
@@ -168,6 +169,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setPlaylistAndStart(questions);
     } catch (e) {
       console.error('Game start error:', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -222,12 +225,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         selectedAnswer,
         score,
         gameOptions,
+        roomCode,
+        isLoading,
         submitAnswer,
         finishRound,
         startNextRound,
         setPlaylist: setPlaylistAndStart,
         setGameOptions,
         startGame,
+        setRoomCode,
       }}
     >
       {children}

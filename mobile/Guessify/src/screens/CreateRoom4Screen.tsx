@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import ScreenBanner from '../components/banners/ScreenBanner';
 import PlayerList from '../components/lists/PlayerList';
 import GreenButton from '../components/buttons/GreenButton';
@@ -8,11 +8,20 @@ import Input from '../components/forms/Input'
 import ShareField from '../components/forms/ShareField';
 import { useGame } from '../context/GameContext';
 
+
 const CreateRoom4Screen = ({ route, navigation }: any) => {
 
   const { roomId, roomCode, password, players = [] } = route.params;
 
-  const { startGame, gameOptions } = useGame();
+  const { startGame, gameOptions, isLoading } = useGame();
+  const { setRoomCode } = useGame();
+  React.useEffect(() => {
+    if (roomCode) {
+      setRoomCode(roomCode);
+    }
+  }, [roomCode]);
+
+  
 
   const onStartGamePress = () => {
     startGame(); 
@@ -39,11 +48,12 @@ const CreateRoom4Screen = ({ route, navigation }: any) => {
         <ShareField value={password} />
 
         <View style={styles.section}>
-          <GreenButton
-            title="Start the Game"
-            onPress={onStartGamePress} 
-          />
-          <GreenButton title="Close the room" screen="LoggedInHome" variant="secondary"/>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#00ff00" />
+          ) : (
+            <GreenButton title="Start the Game" onPress={onStartGamePress} />
+          )}
+          <GreenButton title="Close the room" screen="LoggedInHome" variant="secondary" />
         </View>
       </ScrollView>
     </View>

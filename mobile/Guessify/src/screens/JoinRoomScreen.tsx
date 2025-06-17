@@ -7,6 +7,7 @@ import CenteredText from '../components/texts/CenteredText';
 import { useAuth } from '../context/AuthContext';
 import { joinRoom } from '../api/joinRoom';
 import { connectToSocket, sendToSocket } from '../services/socketService';
+import { useGame } from '../context/GameContext';
 
 
 
@@ -18,6 +19,7 @@ const JoinRoomScreen = ({ navigation }: any) => {
   const [error, setError] = useState('');
 
   const { user } = useAuth();
+  const { setRoomCode } = useGame();
 
   const handleJoinRoom = async () => {
     if (roomId.trim() === '' || password.trim() === '') {
@@ -34,6 +36,7 @@ const JoinRoomScreen = ({ navigation }: any) => {
   
     try {
       await joinRoom(roomId);
+      setRoomCode(roomId);
       navigation.navigate('WaitingRoom', {
         roomId,
         username: user?.username,

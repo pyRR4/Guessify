@@ -1,14 +1,9 @@
-export const startGame = async (roomId: string) => {
-    const res = await fetch(`${API_URL}/api/game/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomId }),
-    });
-  
-    if (!res.ok) {
-      throw new Error('Failed to start game');
-    }
-  
-    return res.json();
-  };
-  
+import { API_URL } from '@env';
+
+export const fetchLeaderboard = async (roomCode: string) => {
+  const response = await fetch(`${API_URL}/api/game/leaderboard?roomCode=${roomCode}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch leaderboard');
+  }
+  return await response.json();
+};
