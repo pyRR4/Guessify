@@ -33,3 +33,16 @@ export const sendToSocket = (destination: string, body: any) => {
     });
   }
 };
+
+export const subscribeToSocket = (topic: string, callback: (message: any) => void) => {
+  if (!stompClient || !stompClient.connected) {
+    console.warn('STOMP client not connected yet.');
+    return () => {};
+  }
+
+  const subscription = stompClient.subscribe(topic, (message) => {
+    callback(JSON.parse(message.body));
+  });
+
+  return () => subscription.unsubscribe();
+};

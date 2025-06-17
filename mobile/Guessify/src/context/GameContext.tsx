@@ -7,10 +7,9 @@ import React, {
   SetStateAction,
   useEffect,
 } from 'react';
-import { generateMockPlaylist } from '../services/mockPlaylist';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '@env';
-import { sendToSocket } from '../services/socketService';
+import { sendToSocket, subscribeToSocket } from '../services/socketService';
 
 type Question = {
   id: number;
@@ -72,6 +71,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const { user } = useAuth();
+
   const submitAnswer = (answer: string) => {
     setSelectedAnswer(answer);
     if (question && answer === question.correct) {
@@ -112,50 +113,48 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setRoundStarted(false);
   };
 
-  const { user } = useAuth();
-
   const startGame = async () => {
     try {
       setIsLoading(true);
       const { sourceOfSongs, numberOfRounds } = gameOptions;
-  
+
       let fetchedSongs = [];
 
-      console.log(sourceOfSongs);
-  
       if (sourceOfSongs === 'SPOTIFY') {
-        const playlistId = '3WBxrkvFSTLRSADvwmLhGf'; // tymczasowo hardkodowane
+        const playlistId = '3WBxrkvFSTLRSADvwmLhGf';
         const res = await fetch(`${API_URL}/api/spotify/tracks/random-tracks?playlistId=${playlistId}&count=${numberOfRounds}`);
         fetchedSongs = await res.json();
       }
-  
+
       if (sourceOfSongs === 'HOST') {
         const accessToken = user?.accessToken;
         const resPlaylists = await fetch(`${API_URL}/api/spotify/playlists?access_token=${accessToken}`);
         const playlists = await resPlaylists.json();
-        console.log('Host playlists:', playlists);
         const allSongs: any[] = [];
-  
+
         for (const p of playlists) {
           const res = await fetch(`${API_URL}/api/spotify/playlist?id=${p.id}&access_token=${accessToken}`);
           const songs = await res.json();
           allSongs.push(...songs);
         }
-  
+
         fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
       }
-  
+
       if (sourceOfSongs === 'PLAYERS') {
         const res = await fetch(`${API_URL}/api/spotify/players-songs?roomCode=${roomCode}`);
         const allSongs = await res.json();
         fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
       }
-  
-      
+
       const questions = fetchedSongs.map((track: any, index: number) => ({
         id: index + 1,
         song: track.title,
-        correct: gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist : gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user : track.title,
+        correct: gameOptions.gameGoal === 'GUESS_THE_ARTIST'
+          ? track.artist
+          : gameOptions.gameGoal === 'GUESS_THE_USER'
+          ? track.user
+          : track.title,
         options: shuffle([
           track.title,
           'Wrong 1',
@@ -164,9 +163,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         ]),
         audioUrl: track.preview_url,
       }));
-      
 
-      setPlaylistAndStart(questions);
+
+      sendToSocket(`/app/game/playlist/${roomCode}`, questions);
+      sendToSocket(`/app/game/start/${roomCode}`, {});
     } catch (e) {
       console.error('Game start error:', e);
     } finally {
@@ -179,10 +179,37 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    if (!roomCode) return;
+
+    const unsubPlaylist = subscribeToSocket(`/topic/game/playlist/${roomCode}`, (questions: Question[]) => {
+      console.log('🎵 Playlist received');
+      setPlaylistAndStart(questions);
+    });
+
+    return () => {
+      unsubPlaylist?.();
+    };
+  }, [roomCode]);
+
+  useEffect(() => {
+    if (!roomCode) return;
+
+    const unsubStart = subscribeToSocket(`/topic/game/${roomCode}`, (payload) => {
+      if (payload.type === 'GAME_STARTED') {
+        console.log('🎮 GAME_STARTED received');
+      }
+    });
+
+    return () => {
+      unsubStart?.();
+    };
+  }, [roomCode]);
+
+  useEffect(() => {
     if (gameState === 'round' && question && !roundStarted) {
       const delay = setTimeout(() => {
         setRoundStarted(true);
-      }, 200); 
+      }, 200);
       return () => clearTimeout(delay);
     }
   }, [gameState, question, roundStarted]);
@@ -192,23 +219,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const timer = setTimeout(() => {
         finishRound();
       }, gameOptions.timeToAnswer * 1000);
-  
+
       return () => clearTimeout(timer);
     }
   }, [gameState, roundStarted, gameOptions.timeToAnswer]);
-
-  // Loggign for console debugging in devTOols
-  useEffect(() => {
-    console.log(
-      'Round started:',
-      roundStarted,
-      'GameState:',
-      gameState,
-      'Question:',
-      question?.song
-    );
-  }, [roundStarted, gameState, question]);
-
 
   useEffect(() => {
     setGameState('lobby');
