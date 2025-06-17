@@ -1,4 +1,4 @@
-package com.example.guesifyapi.dto;
+package com.example.guesifyapi.dto.request;
 
 import com.example.guesifyapi.entity.enums.GameMode;
 import com.example.guesifyapi.entity.enums.SongSource;

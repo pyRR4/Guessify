@@ -1,13 +1,12 @@
 package com.example.guesifyapi.controller;
 
-import com.example.guesifyapi.dto.CreateRoomRequest;
+import com.example.guesifyapi.dto.request.CreateRoomRequest;
 import com.example.guesifyapi.entity.GameRoom;
 import com.example.guesifyapi.entity.RoomPlayer;
 import com.example.guesifyapi.entity.User;
 import com.example.guesifyapi.repository.GameRoomRepository;
-import com.example.guesifyapi.repository.RoomPlayerRepository;
 import com.example.guesifyapi.repository.UserRepository;
-import com.example.guesifyapi.dto.SetRoomPasswordRequest;
+import com.example.guesifyapi.dto.request.SetRoomPasswordRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

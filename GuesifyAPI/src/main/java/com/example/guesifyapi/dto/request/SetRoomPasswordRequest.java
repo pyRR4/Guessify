@@ -1,4 +1,4 @@
-package com.example.guesifyapi.dto;
+package com.example.guesifyapi.dto.request;
 
 import lombok.Data;
 

@@ -33,6 +33,9 @@ public class PlayerGameScore {
     @Column(name = "total_score")
     private Integer totalScore = 0;
 
+    @Column(name = "current_round_number", nullable = false)
+    private int currentRoundNumber = 1;
+
     @OneToMany(mappedBy = "playerGameScore")
     private List<PlayerRoundAnswer> roundAnswers;
     

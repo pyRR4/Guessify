@@ -1,10 +1,13 @@
 package com.example.guesifyapi.service.implementation;
 
-import com.example.guesifyapi.dto.Artist;
+import com.example.guesifyapi.dto.response.Artist;
 import com.example.guesifyapi.dto.SongDto;
-import com.example.guesifyapi.dto.SpotifyPlaylistTracksResponse;
+import com.example.guesifyapi.dto.response.SpotifyPlaylistTracksResponse;
+import com.example.guesifyapi.entity.Song;
+import com.example.guesifyapi.repository.SongRepository;
 import com.example.guesifyapi.service.contract.SpotifyAuthService;
 import com.example.guesifyapi.service.contract.SpotifyTrackService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,20 +20,17 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SpotifyTrackServiceImpl implements SpotifyTrackService {
 
     private final SpotifyAuthService spotifyAuthService;
-    private final RestTemplate restTemplate;
+    private final SongRepository songRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     private static final String SPOTIFY_API_URL = "https://api.spotify.com/v1/";
 
-    public SpotifyTrackServiceImpl(SpotifyAuthService spotifyAuthService) {
-        this.spotifyAuthService = spotifyAuthService;
-        this.restTemplate = new RestTemplate();
-    }
-
     @Override
-    public List<SongDto> getRandomSongsFromPlaylist(String playlistId, int numberOfSongs) {
+    public List<Song> getRandomSongsFromPlaylist(String playlistId, int numberOfSongs) {
         String accessToken = spotifyAuthService.getAccessToken();
         List<SongDto> allTracks = new ArrayList<>();
 
@@ -69,9 +69,18 @@ public class SpotifyTrackServiceImpl implements SpotifyTrackService {
             hasMore = body.getNext() != null;
         }
 
-        //TODO: zapisanie songu do bazy
-
         Collections.shuffle(allTracks);
-        return allTracks.stream().limit(numberOfSongs).toList();
+        List<Song> songsToSave = allTracks.stream()
+                .map(dto -> songRepository.findBySpotifyTrackID(dto.getId())
+                        .orElseGet(() -> songRepository.save(
+                                new Song(
+                                        0L,
+                                        dto.getId(),
+                                        dto.getTitle(),
+                                        dto.getArtistNames().get(0)
+                                ))))
+                .toList();
+
+        return songsToSave.stream().limit(numberOfSongs).toList();
     }
 }

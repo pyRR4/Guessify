@@ -14,9 +14,7 @@ CREATE TABLE songs (
    id BIGSERIAL PRIMARY KEY,
    spotify_track_id VARCHAR(255) NOT NULL UNIQUE,
    title VARCHAR(255) NOT NULL,
-   artist VARCHAR(255) NOT NULL,
-   album_cover_url VARCHAR(255),
-   song_url VARCHAR(1024) NOT NULL
+   artist VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE game_rooms (
@@ -76,6 +74,7 @@ CREATE TABLE player_game_scores (
     game_id BIGINT NOT NULL,
     player_id BIGINT NOT NULL,
     total_score INTEGER DEFAULT 0,
+    current_round_number INTEGER NOT NULL DEFAULT 1,
 
     CONSTRAINT fk_playergamescore_game FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     CONSTRAINT fk_playergamescore_player FOREIGN KEY (player_id) REFERENCES users (id) ON DELETE CASCADE,
