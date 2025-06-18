@@ -13,6 +13,7 @@ interface PlayerListProps {
 }
 
 const PlayerList: React.FC<PlayerListProps> = ({ players }) => {
+  console.log(players);
   return (
     <View style={styles.listContainer}>
       {players.map((player) => (

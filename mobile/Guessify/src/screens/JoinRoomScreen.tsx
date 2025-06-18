@@ -6,7 +6,7 @@ import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import { useAuth } from '../context/AuthContext';
 import { joinRoom } from '../api/joinRoom';
-import { connectToSocket, sendToSocket } from '../services/socketService';
+import { subscribeToSocket, sendToSocket } from '../services/socketService';
 import { useGame } from '../context/GameContext';
 
 
@@ -38,7 +38,7 @@ const JoinRoomScreen = ({ navigation }: any) => {
       await joinRoom(roomId);
       setRoomCode(roomId);
     
-      connectToSocket(roomId, (data) => {
+      subscribeToSocket(`/topic/game/${roomId}`, (data) => {
         if (data.playlistId) {
           // Start gry
           navigation.navigate('RoundNumber', {

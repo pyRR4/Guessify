@@ -7,61 +7,73 @@ const socketUrl = `${API_URL}/ws`;
 let stompClient: Client | null = null;
 let isConnected = false;
 let pendingSubscriptions: { topic: string; callback: (data: any) => void }[] = [];
-
-const subscriptions: { [key: string]: () => void } = {};
+const activeSubscriptions: { [topic: string]: () => void } = {};
+let connectResolver: (() => void) | null = null;
+let connectPromise: Promise<void> | null = null;
 
 /**
- * Inicjuje połączenie WebSocket z backendem oraz subskrybuje pokój gry.
+ * Initializes the socket connection.
+ * Call this once (e.g. in App.tsx or GameProvider).
  */
-export const connectToSocket = (
-  roomCode: string,
-  onMessage: (msg: any) => void
-) => {
-  if (stompClient) {
-    stompClient.deactivate();
+export const initializeSocket = (): Promise<void> => {
+  if (stompClient && stompClient.connected) {
+    console.log('✅ Already connected (cached)');
+    return Promise.resolve();
   }
 
-  stompClient = new Client({
-    webSocketFactory: () => new SockJS(socketUrl),
-    reconnectDelay: 5000,
-    debug: (msg) => console.log('[STOMP]', msg),
+  if (connectPromise) {
+    console.log('⏳ Connection already in progress...');
+    return connectPromise;
+  }
 
-    onConnect: () => {
-      isConnected = true;
-      console.log('✅ Connected to WebSocket');
+  console.log('🌐 Connecting to WebSocket at', socketUrl);
 
-      // Subskrypcja główna (start gry itp.)
-      stompClient?.subscribe(`/topic/game/${roomCode}`, (message: IMessage) => {
-        try {
-          const data = JSON.parse(message.body);
-          onMessage(data);
-        } catch (e) {
-          console.error('❌ Failed to parse message', e);
-        }
-      });
+  connectPromise = new Promise((resolve, reject) => {
+    connectResolver = resolve;
 
-      // Obsługa zaległych subskrypcji
-      pendingSubscriptions.forEach(({ topic, callback }) => {
-        subscribeToSocket(topic, callback);
-      });
-      pendingSubscriptions = [];
-    },
+    stompClient = new Client({
+      webSocketFactory: () => {
+        console.log('🧪 Creating SockJS connection');
+        return new SockJS(socketUrl);
+      },
+      reconnectDelay: 5000,
+      debug: (msg) => console.log('[STOMP DEBUG]', msg),
 
-    onStompError: (frame) => {
-      console.error('❌ STOMP error:', frame.headers['message']);
-    },
+      onConnect: () => {
+        console.log('✅ STOMP connected');
+        isConnected = true;
+        connectResolver?.();
+        connectResolver = null;
 
-    onDisconnect: () => {
-      isConnected = false;
-      console.log('🔌 Disconnected from WebSocket');
-    }
+        pendingSubscriptions.forEach(({ topic, callback }) => {
+          subscribeToSocket(topic, callback);
+        });
+        pendingSubscriptions = [];
+      },
+
+      onStompError: (frame) => {
+        console.error('❌ STOMP error:', frame.headers['message']);
+      },
+
+      onWebSocketError: (event) => {
+        console.error('🛑 WebSocket connection error:', event);
+        reject(new Error('WebSocket connection failed'));
+        connectResolver = null;
+        connectPromise = null;
+        stompClient = null;
+        isConnected = false;
+      },
+    });
+
+    stompClient.activate();
   });
 
-  stompClient.activate();
+  return connectPromise;
 };
 
+
 /**
- * Wysyła wiadomość STOMP.
+ * Sends a message over STOMP.
  */
 export const sendToSocket = (destination: string, body: any) => {
   if (stompClient && isConnected) {
@@ -70,46 +82,55 @@ export const sendToSocket = (destination: string, body: any) => {
       body: JSON.stringify(body),
     });
   } else {
-    console.warn('⚠️ Cannot send — STOMP not connected');
+    console.warn(`⚠️ Cannot send to ${destination} — STOMP not connected`);
   }
 };
 
 /**
- * Subskrybuje dowolny temat STOMP, albo zapisuje do kolejki.
+ * Subscribes to a STOMP topic, or queues it until connected.
  */
-export const subscribeToSocket = (
+export const subscribeToSocket = async (
   topic: string,
   callback: (data: any) => void
-): (() => void) | undefined => {
+): Promise<() => void | undefined> => {
+  await initializeSocket();
+
   if (!stompClient || !isConnected) {
-    console.warn(`🕒 STOMP not connected. Queuing subscription to ${topic}`);
+    console.warn(`🕒 STOMP not connected even after init. Queuing subscription to ${topic}`);
     pendingSubscriptions.push({ topic, callback });
     return;
   }
 
+  // Zapobiegaj duplikatom
+  if (activeSubscriptions[topic]) {
+    console.warn(`⚠️ Already subscribed to ${topic}`);
+    return;
+  }
+
+  console.log(`📡 Subscribing to ${topic}`);
   const subscription = stompClient.subscribe(topic, (message: IMessage) => {
     try {
       const data = JSON.parse(message.body);
       callback(data);
     } catch (e) {
-      console.error('❌ Failed to parse message', e);
+      console.error('❌ Failed to parse STOMP message', e);
     }
   });
 
-  subscriptions[topic] = () => subscription.unsubscribe();
+  activeSubscriptions[topic] = () => subscription.unsubscribe();
   return () => subscription.unsubscribe();
 };
 
 /**
- * Rozłącza STOMP i czyści wszystko.
+ * Gracefully disconnects from STOMP and clears all data.
  */
 export const disconnectSocket = () => {
   if (stompClient) {
-    Object.values(subscriptions).forEach((unsubscribe) => unsubscribe());
+    Object.values(activeSubscriptions).forEach((unsubscribe) => unsubscribe());
     stompClient.deactivate();
     stompClient = null;
     isConnected = false;
     pendingSubscriptions = [];
-    console.log('🛑 Disconnected from WebSocket');
+    console.log('🛑 STOMP fully disconnected');
   }
 };

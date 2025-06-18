@@ -9,7 +9,8 @@ import React, {
 } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '@env';
-import { sendToSocket, subscribeToSocket } from '../services/socketService';
+import { sendToSocket, subscribeToSocket, initializeSocket} from '../services/socketService';
+import { fakeTitles, fakeArtists } from '../services/fakeAnswers';
 
 type Question = {
   id: number;
@@ -70,6 +71,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   });
   const [roomCode, setRoomCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [socketReady, setSocketReady] = useState(false);
 
   const { user } = useAuth();
 
@@ -120,6 +122,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const startGame = async () => {
     try {
       setIsLoading(true);
+      await initializeSocket();
       const playlistId = '3WBxrkvFSTLRSADvwmLhGf'; // przykładowe ID – można pobierać dynamicznie
 
       sendToSocket(`/app/game/start/${roomCode}`, {
@@ -130,21 +133,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const res = await fetch(`${API_URL}/api/spotify/playlist?id=${playlistId}&access_token=${user?.accessToken}`);
       const tracks = await res.json();
 
-      const questions = tracks.slice(0, gameOptions.numberOfRounds).map((track: any, index: number) => ({
-        id: index + 1,
-        song: track.title,
-        correct:
+      const questions = tracks.slice(0, gameOptions.numberOfRounds).map((track: any, index: number) => {
+        const correctAnswer =
           gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist :
           gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user :
-          track.title,
-        options: shuffle([
-          track.title,
-          'Wrong 1',
-          'Wrong 2',
-          'Wrong 3',
-        ]),
-        audioUrl: track.preview_url,
-      }));
+          track.title;
+      
+        const wrongAnswers = (() => {
+          const pool = gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? fakeArtists : fakeTitles;
+          const filtered = pool.filter((item) => item !== correctAnswer);
+          return shuffle(filtered).slice(0, 3);
+        })();
+      
+        return {
+          id: index + 1,
+          song: track.title,
+          correct: correctAnswer,
+          options: shuffle([correctAnswer, ...wrongAnswers]),
+          audioUrl: track.preview_url,
+        };
+      });
 
       setPlaylistAndStart(questions);
     } catch (e) {
@@ -155,35 +163,73 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    if (!roomCode) return;
+    initializeSocket()
+      .then(() => {
+        console.log('🟢 STOMP initialized');
+        setSocketReady(true);
+      })
+      .catch((err) => {
+        console.error('❌ Failed to connect to STOMP:', err);
+      });
+  }, []);
 
-    const unsubStart = subscribeToSocket(`/topic/game/${roomCode}`, (payload) => {
-      if (payload.playlist) {
-        console.log('🎮 GAME_STARTED - playlist received');
-        const questions = payload.playlist.map((track: any, index: number) => ({
-          id: index + 1,
-          song: track.title,
-          correct:
-            gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist :
-            gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user :
-            track.title,
-          options: shuffle([
-            track.title,
-            'Wrong 1',
-            'Wrong 2',
-            'Wrong 3',
-          ]),
-          audioUrl: track.preview_url,
-        }));
-
-        setPlaylistAndStart(questions);
-      }
-    });
-
-    return () => {
-      unsubStart?.();
+  useEffect(() => {
+  
+    if (!roomCode || !socketReady) return;
+  
+    let unsub: (() => void) | undefined;
+  
+    const setupSubscription = async () => {
+      unsub = await subscribeToSocket(`/topic/game/${roomCode}`, (payload) => {
+        if (payload.type === 'GAME_STARTED' && payload.playlist) {
+          console.log('🎮 GAME_STARTED - playlist received');
+  
+          const questions = payload.playlist.map((track: any, index: number) => {
+            const correct =
+              gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist :
+              gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user :
+              track.title;
+  
+            const wrongAnswers = (() => {
+              const pool = gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? fakeArtists : fakeTitles;
+              const filtered = pool.filter((item) => item !== correct);
+              return shuffle(filtered).slice(0, 3);
+            })();
+  
+            return {
+              id: index + 1,
+              song: track.title,
+              correct,
+              options: shuffle([correct, ...wrongAnswers]),
+              audioUrl: track.preview_url,
+            };
+          });
+  
+          setPlaylistAndStart(questions);
+        }
+  
+        if (payload.type === 'ROUND_START') {
+          console.log(`▶️ ROUND ${payload.roundNumber} STARTED`);
+          setCurrentRound(payload.roundNumber - 1);
+          setQuestion(playlist[payload.roundNumber - 1] || null);
+          setGameState('round');
+          setRoundStarted(false);
+        }
+  
+        if (payload.type === 'GAME_FINISHED') {
+          setGameState('leaderboard');
+        }
+      });
     };
-  }, [roomCode]);
+  
+    setupSubscription();
+  
+    return () => {
+      unsub?.();
+    };
+  }, [roomCode, gameOptions, playlist]);
+  
+  
 
   useEffect(() => {
     if (gameState === 'round' && question && !roundStarted) {

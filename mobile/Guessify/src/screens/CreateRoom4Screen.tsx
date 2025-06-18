@@ -7,6 +7,7 @@ import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input'
 import ShareField from '../components/forms/ShareField';
 import { useGame } from '../context/GameContext';
+import { connectToSocket } from '../services/socketService';
 
 
 const CreateRoom4Screen = ({ route, navigation }: any) => {
@@ -20,6 +21,8 @@ const CreateRoom4Screen = ({ route, navigation }: any) => {
       setRoomCode(roomCode);
     }
   }, [roomCode]);
+
+  
 
   
 
@@ -42,7 +45,10 @@ const CreateRoom4Screen = ({ route, navigation }: any) => {
         <CenteredText>
           Players {players.length}/10
         </CenteredText>
-        <PlayerList players={players} />
+        <PlayerList players={players.map((name, index) => ({
+          id: index,
+          username: name,
+        }))} />
         <CenteredText> Sharing the Room </CenteredText>
         <ShareField value={roomCode} />
         <ShareField value={password} />

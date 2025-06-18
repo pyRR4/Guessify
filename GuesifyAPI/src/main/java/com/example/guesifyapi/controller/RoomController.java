@@ -19,6 +19,8 @@ import java.util.UUID;
 
 import java.util.Enumeration;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -54,7 +56,11 @@ public class RoomController {
         room.setRoomPasswordHash(request.getRoomPasswordHash());
 
         GameRoom saved = gameRoomRepository.save(room);
-        return ResponseEntity.ok(saved);
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", room.getId());
+        result.put("roomCode", room.getRoomCode());
+        // inne pola, które frontend potrzebuje
+        return ResponseEntity.ok(result);
     }
 
 

@@ -6,7 +6,7 @@ import PlayerList from '../components/lists/PlayerList';
 import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import { getPlayersInRoom } from '../api/room';
-import { connectToSocket } from '../services/socketService';
+import { subscribeToSocket  } from '../services/socketService';
 
 interface Player {
   id: number;
@@ -19,7 +19,7 @@ const WaitingRoomScreen = () => {
   const navigation = useNavigation<any>();
   const { roomId } = route.params;
 
-  const [players, setPlayers] = useState<{ id: number; username: string }[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -37,11 +37,11 @@ const WaitingRoomScreen = () => {
   }, [roomId]);
 
   useEffect(() => {
-    connectToSocket(roomId, (data) => {
-      if (data.playlistId) {
+    subscribeToSocket(`/topic/game/${roomId}`, (data: any) => {
+      if (data.type === 'ROUND_START') {
         navigation.navigate('RoundNumber', {
-          roundNumber: 1,
-          playlistId: data.playlistId,
+          roundNumber: data.roundNumber,
+          trackUri: data.trackUri,
         });
       }
     });

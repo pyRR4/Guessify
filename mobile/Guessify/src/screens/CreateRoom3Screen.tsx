@@ -5,6 +5,7 @@ import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
 import Input from '../components/forms/Input';
 import { createRoom } from '../api/createRoom';
+import { joinRoom } from '../api/joinRoom'; //
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 
@@ -17,57 +18,59 @@ const CreateRoom3Screen = ({ navigation, route }: any) => {
   const hostName = user?.username || 'PLAYER';
 
   const {
-      maxPlayers = 10,
+    maxPlayers = 10,
+    songSource,
+    gameMode,
+    answerTimeSeconds,
+    roundsNumber,
+    playbackLength,
+  } = route.params;
+
+  const handleCreateRoom = async () => {
+    if (password.trim() === '') {
+      setError('Password cannot be empty');
+      return;
+    }
+
+    setError('');
+
+    const payload: CreateRoomPayload = {
+      hostId: user?.id!,
+      maxPlayers,
       songSource,
       gameMode,
       answerTimeSeconds,
       roundsNumber,
       playbackLength,
-    } = route.params;
-
-    const handleCreateRoom = async () => {
-      if (password.trim() === '') {
-        setError('Password cannot be empty');
-        return;
-      }
-    
-      setError('');
-    
-      const payload: CreateRoomPayload = {
-        hostId: user?.id!,
-        maxPlayers,
-        songSource,
-        gameMode,
-        answerTimeSeconds,
-        roundsNumber,
-        playbackLength,
-        roomPasswordHash: password,
-      };
-    
-      try {
-        console.log(JSON.stringify(payload, null, 2));
-        const response = await createRoom(payload);
-
-        setGameOptions({
-          sourceOfSongs: songSource,
-          gameGoal: gameMode,
-          timeToAnswer: answerTimeSeconds,
-          numberOfRounds: roundsNumber,
-          playbackLength: playbackLength,
-        });
-    
-        navigation.navigate('CreateRoom4', {
-          roomId: response.id,
-          roomCode: response.roomCode,
-          password,
-          players: [user?.username],
-        });
-      } catch (e) {
-        console.error('Room creation failed', e);
-        setError('Could not create room.');
-      }
+      roomPasswordHash: password,
     };
 
+    try {
+      console.log(JSON.stringify(payload, null, 2));
+      const response = await createRoom(payload);
+
+      // 🟢 HOST dołącza jako gracz
+      await joinRoom(response.roomCode);
+
+      setGameOptions({
+        sourceOfSongs: songSource,
+        gameGoal: gameMode,
+        timeToAnswer: answerTimeSeconds,
+        numberOfRounds: roundsNumber,
+        playbackLength: playbackLength,
+      });
+
+      navigation.navigate('CreateRoom4', {
+        roomId: response.id,
+        roomCode: response.roomCode,
+        password,
+        players: [user?.username], // Można to potem wyciągać z backendu
+      });
+    } catch (e) {
+      console.error('Room creation failed', e);
+      setError('Could not create room.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -88,7 +91,7 @@ const CreateRoom3Screen = ({ navigation, route }: any) => {
 
         <View style={styles.section}>
           <GreenButton title="Launch your Room" onPress={handleCreateRoom} />
-          <GreenButton title="Back" screen="CreateRoom2" variant="secondary"/>
+          <GreenButton title="Back" screen="CreateRoom2" variant="secondary" />
         </View>
       </ScrollView>
     </View>
@@ -101,22 +104,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   scrollContent: {
-      paddingVertical: 40,
-      paddingHorizontal: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexGrow: 1,
-      gap: 110,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexGrow: 1,
+    gap: 110,
   },
   section: {
-      alignItems: 'center',
-      marginBottom: 30,
-      width: '100%',
+    alignItems: 'center',
+    marginBottom: 30,
+    width: '100%',
   },
   error: {
-      color: 'red',
-      marginTop: 10,
-      fontSize: 14,
+    color: 'red',
+    marginTop: 10,
+    fontSize: 14,
   },
 });
 

@@ -43,57 +43,52 @@ public class GameSocketServiceImpl implements GameSocketService {
     public void startGame(String roomCode, String playlistId) {
         log.info("Service: Starting game for room: {}", roomCode);
 
-        // Znajdź grę lub rzuć wyjątek
+        // 1. Pobierz grę
         Game game = gameRepository.findByGameRoomCode(roomCode)
                 .orElseThrow(() -> new IllegalArgumentException("Game not found for code: " + roomCode));
 
-        // Walidacja statusu gry
         if (game.getGameStatus() != GameStatus.STARTING) {
             log.warn("Service: Attempted to start a game in room {} that is not in STARTING state. Current status: {}", roomCode, game.getGameStatus());
-            return; // Zakończ, jeśli status jest nieprawidłowy
+            return;
         }
 
+        // 2. Wylosuj piosenki
         List<Song> randomSongs = spotifyTrackService.getRandomSongsFromPlaylist(playlistId, 10);
-
         List<GameSong> gameSongs = new ArrayList<>();
         for (int i = 0; i < randomSongs.size(); i++) {
-            Song song = randomSongs.get(i);
-            int roundNumber = i + 1; // Rundy numerujemy od 1
-            GameSong gameSong = new GameSong(null, game, song, roundNumber);
-            gameSongs.add(gameSong);
+            gameSongs.add(new GameSong(null, game, randomSongs.get(i), i + 1));
         }
         gameSongRepository.saveAll(gameSongs);
         game.setSongs(gameSongs);
 
-        // 2. Przygotuj kolejkę na Spotify
-        String accessToken = spotifyAuthService.getAccessToken(); // Potrzebujesz metody do uzyskania tokenu użytkownika
-
-        List<String> songUris = randomSongs.stream()
-                .map(song -> "spotify:track:" + song.getSpotifyTrackID())
-                .collect(Collectors.toList());
-
-        spotifyPlayerService.replaceQueueAndPause(songUris, accessToken);
-        spotifyPlayerService.pausePlayback(accessToken);
-
+        // 3. Inicjalizacja wyników graczy
         List<PlayerGameScore> initialScores = new ArrayList<>();
         for (RoomPlayer player : game.getGameRoom().getPlayers()) {
-            PlayerGameScore newScore = new PlayerGameScore(game, player.getUser(), 0);
-            newScore.setCurrentRoundNumber(1); // Każdy gracz zaczyna od rundy 1
-            initialScores.add(newScore);
+            PlayerGameScore score = new PlayerGameScore(game, player.getUser(), 0);
+            score.setCurrentRoundNumber(1);
+            initialScores.add(score);
         }
         playerGameScoreRepository.saveAll(initialScores);
         log.info("Initialized score records for {} players in room {}.", initialScores.size(), roomCode);
 
-        // Aktualizacja stanu gry
+        // 4. Ustaw status gry i zapisz
         game.setGameStatus(GameStatus.IN_PROGRESS);
         game.setStartTime(LocalDateTime.now());
         gameRepository.save(game);
-        log.info("Service: Changed game status in room {} to IN_PROGRESS", roomCode);
 
-        // Wysłanie wiadomości do graczy
-        messagingTemplate.convertAndSend("/topic/game/" + roomCode, Map.of("type", "GAME_STARTED"));
-        log.info("Service: Broadcasted GAME_STARTED to /topic/game/{}", roomCode);
+        // 5. Wyślij pierwszą piosenkę do odtworzenia
+        GameSong firstRound = gameSongs.get(0);
+        String trackUri = "spotify:track:" + firstRound.getSong().getSpotifyTrackID();
+
+        messagingTemplate.convertAndSend("/topic/game/" + roomCode, Map.of(
+                "type", "ROUND_START",
+                "roundNumber", 1,
+                "trackUri", trackUri
+        ));
+
+        log.info("Broadcasted ROUND_START for room {} with track {}", roomCode, trackUri);
     }
+
 
     public void submitAnswer(String roomCode, PlayerAnswerDto answerDto) {
         Game game = gameRepository.findByGameRoomCode(roomCode).orElseThrow(/*...*/);
@@ -131,6 +126,30 @@ public class GameSocketServiceImpl implements GameSocketService {
         playerScore.setTotalScore(playerScore.getTotalScore() + pointsAwarded);
         playerScore.setCurrentRoundNumber(playerScore.getCurrentRoundNumber() + 1);
         playerGameScoreRepository.save(playerScore);
+
+        /*
+        long totalPlayers = game.getGameRoom().getPlayers().size();
+        int round = answerDto.getRoundNumber();
+
+        long finishedCurrentRound = playerGameScoreRepository.findAllByGame(game).stream()
+            .filter(score -> score.getCurrentRoundNumber() > round)
+            .count();
+
+        if (finishedCurrentRound == totalPlayers) {
+            GameSong nextSong = gameSongRepository.findByGameAndRoundNumber(game, round + 1)
+                .orElse(null);
+
+            if (nextSong != null) {
+                messagingTemplate.convertAndSend(
+                    "/topic/game/" + game.getGameRoom().getRoomCode(),
+                    Map.of(
+                        "type", "ROUND_START",
+                        "roundNumber", round + 1,
+                        "trackUri", "spotify:track:" + nextSong.getSong().getSpotifyTrackID()
+                    )
+                );
+            }
+        }*/
 
         checkAndFinishGame(game);
     }
