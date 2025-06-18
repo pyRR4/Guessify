@@ -1,18 +1,30 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+interface Player {
+  id: number;
+  username: string;
+  avatarUrl?: string;
+}
+
 interface PlayerListProps {
-  players: string[];
+  players: Player[];
 }
 
 const PlayerList: React.FC<PlayerListProps> = ({ players }) => {
   return (
     <View style={styles.listContainer}>
-      {players.map((player, index) => (
-        <View key={index} style={styles.playerItem}>
-          <Text style={styles.playerName}>{player}</Text>
-          <Icon name="person-circle-outline" size={24} color="#fff" />
+      {players.map((player) => (
+        <View key={player.id} style={styles.playerItem}>
+          <View style={styles.playerInfo}>
+            {player.avatarUrl ? (
+              <Image source={{ uri: player.avatarUrl }} style={styles.avatar} />
+            ) : (
+              <Icon name="person-circle-outline" size={32} color="#fff" />
+            )}
+            <Text style={styles.playerName}>{player.username}</Text>
+          </View>
         </View>
       ))}
     </View>
@@ -28,7 +40,6 @@ const styles = StyleSheet.create({
   },
   playerItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#1A1A1A',
     width: '80%',
@@ -37,6 +48,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#fff',
+  },
+  playerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   playerName: {
     color: '#fff',

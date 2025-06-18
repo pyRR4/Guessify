@@ -1,10 +1,19 @@
 // api/room.ts
-export const getPlayersInRoom = async (roomId: string): Promise<string[]> => {
-  console.log(`Fetching players for room: ${roomId}`);
+import { API_URL } from '@env';
 
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(['PLAYER 1', 'PLAYER 2', 'PLAYER 3']); // Mock danych
-    }, 500);
+interface Player {
+  id: number;
+  username: string;
+  avatarUrl?: string;
+}
+
+export const getPlayersInRoom = async (roomCode: string): Promise<string[]> => {
+  const res = await fetch(`${API_URL}/api/rooms/code/${roomCode}/players`, {
+    credentials: 'include',
   });
+  if (!res.ok) {
+    throw new Error('Failed to fetch players');
+  }
+  const data = await res.json();
+  return data.map((player: any) => ({ id: player.id, username: player.username }));
 };

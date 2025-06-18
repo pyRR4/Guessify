@@ -129,9 +129,9 @@ public class RoomController {
         return ResponseEntity.ok("Room password updated successfully");
     }
 
-    @GetMapping("/{roomId}/players")
-    public ResponseEntity<?> getPlayersInRoom(@PathVariable Long roomId) {
-        Optional<GameRoom> roomOpt = gameRoomRepository.findById(roomId);
+    @GetMapping("/code/{roomCode}/players")
+    public ResponseEntity<?> getPlayersInRoom(@PathVariable String roomCode) {
+        Optional<GameRoom> roomOpt = gameRoomRepository.findByRoomCode(roomCode);
         if (roomOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Room not found");
         }

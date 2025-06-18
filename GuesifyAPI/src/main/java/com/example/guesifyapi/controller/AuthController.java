@@ -49,7 +49,14 @@ public class AuthController {
     public ResponseEntity<?> exchange(@RequestParam String code, HttpSession session) {
         User user = spotifyAuthService.handleCallback(code);
         session.setAttribute("user", user);
-        return ResponseEntity.ok(user);
+
+        var safeUser = new java.util.HashMap<String, Object>();
+        safeUser.put("id", user.getId());
+        safeUser.put("username", user.getUsername());
+        safeUser.put("avatarUrl", user.getAvatarUrl());
+        safeUser.put("accessToken", user.getAccessToken());
+
+        return ResponseEntity.ok(safeUser);
     }
 
 

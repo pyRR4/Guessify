@@ -8,12 +8,18 @@ import CenteredText from '../components/texts/CenteredText';
 import { getPlayersInRoom } from '../api/room';
 import { connectToSocket } from '../services/socketService';
 
+interface Player {
+  id: number;
+  username: string;
+  avatarUrl?: string;
+}
+
 const WaitingRoomScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const { roomId } = route.params;
 
-  const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<{ id: number; username: string }[]>([]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -31,10 +37,8 @@ const WaitingRoomScreen = () => {
   }, [roomId]);
 
   useEffect(() => {
-    // Subskrypcja WebSocket na start gry
     connectToSocket(roomId, (data) => {
       if (data.playlistId) {
-        console.log('🎮 Gra rozpoczęta!');
         navigation.navigate('RoundNumber', {
           roundNumber: 1,
           playlistId: data.playlistId,
@@ -47,13 +51,9 @@ const WaitingRoomScreen = () => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ScreenBanner title="GAME ROOM" />
-
-        <CenteredText>
-          Players {players.length}/10
-        </CenteredText>
+        <CenteredText>Players {players.length}/10</CenteredText>
         <PlayerList players={players} />
-        <CenteredText> Wait until the Host starts the game</CenteredText>
-
+        <CenteredText>Wait until the Host starts the game</CenteredText>
         <GreenButton title="Leave the Room" screen="Home" variant="secondary" />
       </ScrollView>
     </View>
@@ -72,11 +72,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexGrow: 1,
     gap: 20,
-  },
-  section: {
-    alignItems: 'center',
-    marginBottom: 30,
-    width: '100%',
   },
 });
 
