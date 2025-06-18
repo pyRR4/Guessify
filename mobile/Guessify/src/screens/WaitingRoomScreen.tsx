@@ -1,36 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { ScrollView, View, StyleSheet } from 'react-native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import ScreenBanner from '../components/banners/ScreenBanner';
 import PlayerList from '../components/lists/PlayerList';
 import GreenButton from '../components/buttons/GreenButton';
 import CenteredText from '../components/texts/CenteredText';
-import Input from '../components/forms/Input'
-import ShareField from '../components/forms/ShareField';
 import { getPlayersInRoom } from '../api/room';
+import { connectToSocket } from '../services/socketService';
 
 const WaitingRoomScreen = () => {
   const route = useRoute<any>();
-    const { roomId } = route.params;
+  const navigation = useNavigation<any>();
+  const { roomId } = route.params;
 
-    const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<string[]>([]);
 
-    useEffect(() => {
-      const fetchPlayers = async () => {
-        try {
-          const response = await getPlayersInRoom(roomId);
-          setPlayers(response);
-        } catch (e) {
-          console.error('Failed to fetch players:', e);
-        }
-      };
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const response = await getPlayersInRoom(roomId);
+        setPlayers(response);
+      } catch (e) {
+        console.error('Failed to fetch players:', e);
+      }
+    };
 
-      fetchPlayers();
+    fetchPlayers();
+    const interval = setInterval(fetchPlayers, 5000);
+    return () => clearInterval(interval);
+  }, [roomId]);
 
-      // Opcjonalnie: odświeżaj listę co kilka sekund
-      const interval = setInterval(fetchPlayers, 5000);
-      return () => clearInterval(interval);
-    }, [roomId]);
+  useEffect(() => {
+    // Subskrypcja WebSocket na start gry
+    connectToSocket(roomId, (data) => {
+      if (data.playlistId) {
+        console.log('🎮 Gra rozpoczęta!');
+        navigation.navigate('RoundNumber', {
+          roundNumber: 1,
+          playlistId: data.playlistId,
+        });
+      }
+    });
+  }, [roomId]);
 
   return (
     <View style={styles.container}>
@@ -42,8 +53,8 @@ const WaitingRoomScreen = () => {
         </CenteredText>
         <PlayerList players={players} />
         <CenteredText> Wait until the Host starts the game</CenteredText>
-        <GreenButton title="Leave the Room" screen="Home" variant="secondary"/>
 
+        <GreenButton title="Leave the Room" screen="Home" variant="secondary" />
       </ScrollView>
     </View>
   );
@@ -55,18 +66,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   scrollContent: {
-      paddingVertical: 40,
-      paddingHorizontal: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexGrow: 1,
-      gap: 20,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexGrow: 1,
+    gap: 20,
   },
   section: {
-      alignItems: 'center',
-      marginBottom: 30,
-      width: '100%',
-    },
+    alignItems: 'center',
+    marginBottom: 30,
+    width: '100%',
+  },
 });
 
 export default WaitingRoomScreen;

@@ -1,40 +1,44 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, Text } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useGame } from '../context/GameContext';
-
-type Params = {
-  RoundNumber: {
-    roundNumber: number;
-  };
-};
 
 const RoundNumberScreen = () => {
   const navigation = useNavigation<any>();
-  const route = useRoute<RouteProp<Params, 'RoundNumber'>>();
-  const { gameOptions } = useGame();
+  const { currentRound, gameOptions, question } = useGame();
 
-  const roundNumber = route.params?.roundNumber ?? 1;
+  const roundNumber = currentRound + 1;
   const totalRounds = gameOptions.numberOfRounds;
   const gameMode = gameOptions.gameGoal;
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('GameScreen', {
-        roundNumber,
-      });
+      navigation.replace('GameScreen');
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [navigation, roundNumber]);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
       <Image source={require('../assets/guessify.png')} style={styles.logo} />
       <Text style={styles.text}>{`ROUND ${roundNumber} / ${totalRounds}`}</Text>
-      <Text style={styles.text}>Get Ready for {gameMode}!</Text>
+      <Text style={styles.text}>Get Ready for {formatGameMode(gameMode)}!</Text>
     </View>
   );
+};
+
+const formatGameMode = (mode: string) => {
+  switch (mode) {
+    case 'GUESS_THE_TITLE':
+      return 'GUESS THE TITLE';
+    case 'GUESS_THE_ARTIST':
+      return 'GUESS THE ARTIST';
+    case 'GUESS_THE_USER':
+      return 'GUESS WHO PICKED THIS SONG';
+    default:
+      return '';
+  }
 };
 
 const styles = StyleSheet.create({
@@ -49,9 +53,6 @@ const styles = StyleSheet.create({
     height: 180,
     resizeMode: 'contain',
     marginBottom: 40,
-  },
-  spinner: {
-    marginBottom: 20,
   },
   text: {
     color: '#fff',

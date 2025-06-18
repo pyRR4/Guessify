@@ -46,8 +46,9 @@ public class AuthController {
                 .build();
     }
     @GetMapping("/exchange")
-    public ResponseEntity<?> exchange(@RequestParam String code) {
+    public ResponseEntity<?> exchange(@RequestParam String code, HttpSession session) {
         User user = spotifyAuthService.handleCallback(code);
+        session.setAttribute("user", user);
         return ResponseEntity.ok(user);
     }
 

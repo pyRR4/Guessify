@@ -29,8 +29,14 @@ const FinalScoreScreen = ({ navigation }: any) => {
     );
   }
 
+  const defaultPlayer = { name: '-', score: 0 };
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-  const [first, second, third, ...rest] = sortedPlayers;
+  const [first, second, third, ...rest] = [
+    sortedPlayers[0] ?? defaultPlayer,
+    sortedPlayers[1] ?? defaultPlayer,
+    sortedPlayers[2] ?? defaultPlayer,
+    ...sortedPlayers.slice(3),
+  ];
 
   return (
     <View style={styles.container}>

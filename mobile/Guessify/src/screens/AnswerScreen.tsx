@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ScreenBanner from '../components/banners/ScreenBanner';
 import { useGame } from '../context/GameContext';
@@ -16,7 +16,7 @@ const AnswerScreen = () => {
     gameOptions,
   } = useGame();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const isCorrect = selectedAnswer === question?.correct;
 
@@ -36,7 +36,7 @@ const AnswerScreen = () => {
     }
   }, [gameState]);
 
-  if (!question) return null;
+  if (!question || gameState !== 'results') return null;
 
   const getCorrectLabel = () => {
     switch (gameOptions.gameGoal) {
@@ -51,14 +51,11 @@ const AnswerScreen = () => {
     }
   };
 
-  if (!question || gameState !== 'results') return null;
-
   return (
     <View style={styles.container}>
       <ScreenBanner title={`Round ${currentRound + 1} Answer`} />
 
       <View style={styles.imageWrapper}>
-        {/*TODO: ALBUM COVER*/}
         <Image
           source={require('../assets/guessify.png')}
           style={styles.image}
@@ -100,7 +97,6 @@ const AnswerScreen = () => {
         <Text style={styles.label}>Current Score</Text>
         <Text style={styles.value}>{score} pts</Text>
       </View>
-
     </View>
   );
 };
@@ -153,17 +149,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 6,
     marginTop: 10,
-  },
-  nextButton: {
-    marginTop: 30,
-    backgroundColor: '#00C853',
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 25,
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
 });

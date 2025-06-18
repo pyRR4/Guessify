@@ -17,6 +17,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import java.util.Enumeration;
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
@@ -71,10 +74,13 @@ public class RoomController {
 
     @PostMapping("/{roomCode}/join")
     public ResponseEntity<?> joinRoom(@PathVariable String roomCode, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
+
+        User sessionUser = (User) session.getAttribute("user");
+        if (sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
+
+        User user = userRepository.findById(sessionUser.getId()).orElseThrow();
 
         Optional<GameRoom> optionalRoom = gameRoomRepository.findByRoomCode(roomCode);
         if (optionalRoom.isEmpty()) {
@@ -82,10 +88,9 @@ public class RoomController {
         }
 
         GameRoom room = optionalRoom.get();
-        User user = userRepository.findById(userId).orElseThrow();
 
         boolean alreadyInRoom = room.getPlayers().stream()
-                .anyMatch(rp -> rp.getUser().getId().equals(userId));
+                .anyMatch(rp -> rp.getUser().getId().equals(user.getId()));
 
         if (alreadyInRoom) {
             return ResponseEntity.ok("User already in the room");
@@ -94,6 +99,7 @@ public class RoomController {
         RoomPlayer roomPlayer = new RoomPlayer();
         roomPlayer.setGameroom(room);
         roomPlayer.setUser(user);
+        roomPlayer.setJoinedAt(LocalDateTime.now());
 
         room.getPlayers().add(roomPlayer);
         gameRoomRepository.save(room);

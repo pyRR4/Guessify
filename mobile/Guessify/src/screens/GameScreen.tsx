@@ -5,16 +5,16 @@ import { useGame } from '../context/GameContext';
 import { useNavigation } from '@react-navigation/native';
 
 const GameScreen = () => {
-  const { 
-    question, 
-    selectedAnswer, 
-    submitAnswer, 
-    currentRound, 
-    gameState, 
-    gameOptions 
+  const {
+    question,
+    selectedAnswer,
+    submitAnswer,
+    currentRound,
+    gameState,
+    gameOptions,
   } = useGame();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     if (gameState === 'results') {

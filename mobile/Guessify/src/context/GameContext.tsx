@@ -113,48 +113,30 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setRoundStarted(false);
   };
 
+  const shuffle = (array: any[]) => {
+    return array.sort(() => Math.random() - 0.5);
+  };
+
   const startGame = async () => {
     try {
       setIsLoading(true);
-      const { sourceOfSongs, numberOfRounds } = gameOptions;
+      const playlistId = '3WBxrkvFSTLRSADvwmLhGf'; // przykładowe ID – można pobierać dynamicznie
 
-      let fetchedSongs = [];
+      sendToSocket(`/app/game/start/${roomCode}`, {
+        playlistId,
+      });
 
-      if (sourceOfSongs === 'SPOTIFY') {
-        const playlistId = '3WBxrkvFSTLRSADvwmLhGf';
-        const res = await fetch(`${API_URL}/api/spotify/tracks/random-tracks?playlistId=${playlistId}&count=${numberOfRounds}`);
-        fetchedSongs = await res.json();
-      }
+      // Host może pobrać utwory lokalnie do podglądu
+      const res = await fetch(`${API_URL}/api/spotify/playlist?id=${playlistId}&access_token=${user?.accessToken}`);
+      const tracks = await res.json();
 
-      if (sourceOfSongs === 'HOST') {
-        const accessToken = user?.accessToken;
-        const resPlaylists = await fetch(`${API_URL}/api/spotify/playlists?access_token=${accessToken}`);
-        const playlists = await resPlaylists.json();
-        const allSongs: any[] = [];
-
-        for (const p of playlists) {
-          const res = await fetch(`${API_URL}/api/spotify/playlist?id=${p.id}&access_token=${accessToken}`);
-          const songs = await res.json();
-          allSongs.push(...songs);
-        }
-
-        fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
-      }
-
-      if (sourceOfSongs === 'PLAYERS') {
-        const res = await fetch(`${API_URL}/api/spotify/players-songs?roomCode=${roomCode}`);
-        const allSongs = await res.json();
-        fetchedSongs = shuffle(allSongs).slice(0, numberOfRounds);
-      }
-
-      const questions = fetchedSongs.map((track: any, index: number) => ({
+      const questions = tracks.slice(0, gameOptions.numberOfRounds).map((track: any, index: number) => ({
         id: index + 1,
         song: track.title,
-        correct: gameOptions.gameGoal === 'GUESS_THE_ARTIST'
-          ? track.artist
-          : gameOptions.gameGoal === 'GUESS_THE_USER'
-          ? track.user
-          : track.title,
+        correct:
+          gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist :
+          gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user :
+          track.title,
         options: shuffle([
           track.title,
           'Wrong 1',
@@ -164,9 +146,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         audioUrl: track.preview_url,
       }));
 
-
-      sendToSocket(`/app/game/playlist/${roomCode}`, questions);
-      sendToSocket(`/app/game/start/${roomCode}`, {});
+      setPlaylistAndStart(questions);
     } catch (e) {
       console.error('Game start error:', e);
     } finally {
@@ -174,29 +154,29 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const shuffle = (array: any[]) => {
-    return array.sort(() => Math.random() - 0.5);
-  };
-
-  useEffect(() => {
-    if (!roomCode) return;
-
-    const unsubPlaylist = subscribeToSocket(`/topic/game/playlist/${roomCode}`, (questions: Question[]) => {
-      console.log('🎵 Playlist received');
-      setPlaylistAndStart(questions);
-    });
-
-    return () => {
-      unsubPlaylist?.();
-    };
-  }, [roomCode]);
-
   useEffect(() => {
     if (!roomCode) return;
 
     const unsubStart = subscribeToSocket(`/topic/game/${roomCode}`, (payload) => {
-      if (payload.type === 'GAME_STARTED') {
-        console.log('🎮 GAME_STARTED received');
+      if (payload.playlist) {
+        console.log('🎮 GAME_STARTED - playlist received');
+        const questions = payload.playlist.map((track: any, index: number) => ({
+          id: index + 1,
+          song: track.title,
+          correct:
+            gameOptions.gameGoal === 'GUESS_THE_ARTIST' ? track.artist :
+            gameOptions.gameGoal === 'GUESS_THE_USER' ? track.user :
+            track.title,
+          options: shuffle([
+            track.title,
+            'Wrong 1',
+            'Wrong 2',
+            'Wrong 3',
+          ]),
+          audioUrl: track.preview_url,
+        }));
+
+        setPlaylistAndStart(questions);
       }
     });
 

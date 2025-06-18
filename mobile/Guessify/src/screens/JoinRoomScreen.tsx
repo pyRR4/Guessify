@@ -26,7 +26,7 @@ const JoinRoomScreen = ({ navigation }: any) => {
       setError('Both fields are required');
       return;
     }
-  
+    console.log('Auth user:', user);
     if (!user?.id) {
       setError('You must be logged in to join a room.');
       return;
@@ -37,6 +37,17 @@ const JoinRoomScreen = ({ navigation }: any) => {
     try {
       await joinRoom(roomId);
       setRoomCode(roomId);
+    
+      connectToSocket(roomId, (data) => {
+        if (data.playlistId) {
+          // Start gry
+          navigation.navigate('RoundNumber', {
+            roundNumber: 1,
+            playlistId: data.playlistId,
+          });
+        }
+      });
+    
       navigation.navigate('WaitingRoom', {
         roomId,
         username: user?.username,

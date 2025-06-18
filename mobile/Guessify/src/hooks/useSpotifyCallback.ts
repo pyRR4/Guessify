@@ -15,7 +15,10 @@ const useSpotifyCallback = () => {
       if (!code) return;
   
       try {
-        const res = await fetch(`${API_URL}/api/auth/exchange?code=${code}`);
+        const res = await fetch(`${API_URL}/api/auth/exchange?code=${code}`, {
+          method: 'GET',
+          credentials: 'include',
+        });
         const user = await res.json();
   
         login({
